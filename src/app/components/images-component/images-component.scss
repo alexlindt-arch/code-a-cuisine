@@ -23,10 +23,3 @@ img {
 
 
 }
-
-// The hero plates fill their column, so they must not be capped at 460px like every other
-// image that uses this component.
-img.hero-image {
-  max-width: none;
-  max-height: none;
-}
