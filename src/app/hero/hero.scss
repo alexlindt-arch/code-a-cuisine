@@ -401,6 +401,26 @@
       }
     }
 
+    // Fill the whole column: plates as wide as the column, overlapping enough that no green
+    // shows between them, and the stack centred so the crop is shared between top and bottom.
+    @media only screen and (min-width: 660px) {
+      justify-content: center;
+
+      app-images-component:nth-child(n) {
+        width: 100%;
+        max-width: none;
+        max-height: none;
+        margin-top: -16%;
+      }
+
+      app-images-component:nth-child(4),
+      app-images-component:nth-child(5) {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
   }
 }
 
