@@ -2,12 +2,14 @@
 @use '../../scss/abstract/mixings.scss' as mixin;
 
 .cookbook-category-page {
-  min-height: calc(100vh - 100px);
+  min-height: calc(100svh - 100px);
   background: #ffffff;
-  padding: 24px 18px 40px;
+  // Vertical padding only: the horizontal gutter belongs to .content-limited, otherwise
+  // both add up and the content column no longer matches the rest of the app.
+  padding: 24px 0 40px;
 
   @include mixin.smartphone {
-    padding: 0px;
+    padding: 8px 0 24px;
   }
 }
 
@@ -31,7 +33,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 0 68px 40px;
+  padding: 0 40px 40px;
 
   @include mixin.smartphone {
     padding: 0 16px 0px;
@@ -171,7 +173,9 @@
 
 .recipe-list li {
   padding: 6px 10px;
-  margin: 32px 0;
+  // Negative inline margin cancels the padding: the entries line up with the banner and
+  // the back link, while the hover highlight keeps its breathing room.
+  margin: 32px -10px;
 
   &:hover {
     background: #FFF7EE;

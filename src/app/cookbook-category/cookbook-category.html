@@ -24,10 +24,11 @@
         </header>
         }
 
+        @if (databaseUnavailable()) {
+        <p class="category-status category-status-error" role="status">Showing the preinstalled recipes only, the recipe database is currently unreachable.</p>
+        }
         @if (loadingState() === 'loading') {
         <p class="category-status" role="status">Loading category recipes from database...</p>
-        } @else if (loadingState() === 'error') {
-        <p class="category-status category-status-error" role="alert">Could not load category recipes from database.</p>
         } @else if (displayedRecipes().length === 0) {
         <p class="category-status">No recipes saved in this category yet.</p>
         } @else {

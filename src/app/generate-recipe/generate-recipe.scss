@@ -33,7 +33,8 @@ h2 {
 }
 
 section {
-  height: calc(100svh - 100px);
+  height: auto;
+  min-height: calc(100svh - 100px);
 
   @include mixin.tablet {
     height: auto;
@@ -41,6 +42,11 @@ section {
   }
 
   @include mixin.smartphone {
+    height: auto;
+    min-height: calc(100svh - 100px);
+  }
+
+  @include mixin.landscape-short {
     height: auto;
     min-height: calc(100svh - 100px);
   }

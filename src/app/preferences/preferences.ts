@@ -8,6 +8,7 @@ import { ImagesComponent } from '../components/images-component/images-component
 import { LoadingStateService } from '../loading-state.service';
 import { PreferencesQuotaService } from './preferences-quota.service';
 import { CONNECTION_ERROR_MESSAGE, RecipeRequestService, type RequestDialogKind } from './recipe-request.service';
+import { clearStoredIngredients } from '../generate-recipe/generate-recipe.utils';
 import type {
   CookingTimeId,
   CookingTimeOption,
@@ -331,7 +332,14 @@ export class Preferences implements OnDestroy {
   }
 
   /**
-   * Records the successful generation locally, syncs the server quota and stores the response.
+   * Records the successful generation locally, syncs the server quota, stores the response
+   * and clears the ingredient list that was just turned into recipes.
+   *
+   * This is the single place where the ingredients are cleared, because it runs only after the
+   * webhook answered successfully: a failed request (400, 429, 500 or a network error) takes the
+   * error path and keeps the list for a retry, and a list that has not been generated yet survives
+   * moving between the generate recipe and preferences pages. The request payload and the response
+   * stay in localStorage, so the results page keeps working after the ingredients are gone.
    * @param response - Response body of the webhook.
    */
   private handleSuccess(response: unknown): void {
@@ -344,6 +352,7 @@ export class Preferences implements OnDestroy {
     this.quota.message.set(null);
     localStorage.removeItem(this.errorKey);
     localStorage.setItem(this.responseKey, JSON.stringify(response));
+    clearStoredIngredients(this.storageKey);
   }
 
   /**

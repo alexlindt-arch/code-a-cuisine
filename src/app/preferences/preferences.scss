@@ -51,6 +51,13 @@
       min-height: 400px;
     }
 
+    // A 500px card does not fit into a 360px high landscape viewport.
+    @include mix.landscape-short() {
+      min-width: min(340px, 100%);
+      min-height: min(55svh, 260px);
+      padding: 16px 20px;
+    }
+
   }
 
   &>p {
@@ -62,6 +69,13 @@
 
     @include mix.smartphone() {
       font-size: var.$font-size-lg;
+      width: 100%;
+      text-align: center;
+    }
+
+    @include mix.landscape-short() {
+      font-size: var.$font-size-lg;
+      margin: 0 0 6px 0;
       width: 100%;
       text-align: center;
     }

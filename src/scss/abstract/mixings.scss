@@ -98,4 +98,14 @@
       @content;
     }
   }
+
+  /// Phone and small tablet landscape: the viewport is wide but very short
+  /// (844x390, 740x360, 667x375 ...). Layouts that reserve a full viewport height
+  /// have to release it here, otherwise their content runs out of the coloured
+  /// section and the page background shows up as a white bar at the bottom.
+  @mixin landscape-short {
+    @media only screen and (orientation: landscape) and (max-height: 520px) {
+      @content;
+    }
+  }
     

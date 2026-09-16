@@ -190,6 +190,17 @@ export function readStoredIngredients(storageKey: string): RecipeIngredient[] {
 }
 
 /**
+ * Empties the stored ingredient list while keeping the rest of the recipe context.
+ * Called once a recipe generation has succeeded, so that opening the generate recipe page
+ * again starts with an empty list instead of the ingredients that were already used.
+ * @param storageKey - localStorage key of the context.
+ */
+export function clearStoredIngredients(storageKey: string): void {
+  const context = readStoredRecipeContext(storageKey);
+  localStorage.setItem(storageKey, JSON.stringify({ ...context, ingredients: [] }));
+}
+
+/**
  * Converts an ingredient name into a Firebase-safe key.
  * @param name - Ingredient name.
  * @returns A lowercase slug, or 'ingredient' when nothing usable remains.

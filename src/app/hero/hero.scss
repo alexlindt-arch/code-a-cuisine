@@ -5,27 +5,43 @@
   display: grid;
   justify-content: space-between;
   flex-direction: column;
-  height: calc(100vh - 169px);
+  height: calc(100svh - 169px);
   grid-template-columns: 1.3fr 1fr;
 
   @include mixin.smartphone {
     @include mixin.flex-between();
     flex-direction: column;
-    height: calc(100vh - 100px);
+    height: calc(100svh - 100px);
   }
 
   @include mixin.landscape-min {
     height: 100%;
   }
 
+  // Short landscape viewports: release the fixed viewport height. The hero content is
+  // taller than ~360px, and a fixed height made it spill out of the green section,
+  // leaving a white bar at the bottom with the text sticking into it.
+  @include mixin.landscape-short {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    height: auto;
+    min-height: calc(100svh - 100px);
+  }
+
   .content-left {
     position: relative;
     @include mixin.flex-between();
     flex-direction: column;
-    height: calc(100vh - 169px);
+    height: calc(100svh - 169px);
 
     @include mixin.landscape-min {
       height: 100%;
+    }
+
+    @include mixin.landscape-short {
+      height: auto;
+      justify-content: flex-start;
+      padding-bottom: 12px;
     }
 
     .top-content {
@@ -43,6 +59,13 @@
           width: 60%;
         }
 
+        // Scale the headline with the available height: the global 8vw would be
+        // ~60px on a 360px high screen and push everything out of the viewport.
+        @include mixin.landscape-short {
+          width: 100%;
+          font-size: clamp(28px, 11svh, 48px);
+        }
+
       }
 
       @include mixin.desktop {
@@ -50,21 +73,27 @@
         margin-left: 8px;
         font-size: var.$font-size-md;
         padding: 0;
-        height: calc(100vh - 169px);
+        height: calc(100svh - 169px);
       }
 
       @include mixin.tablet {
         margin-top: 0px;
         font-size: var.$font-size-md;
         padding: 0;
-        height: calc(100vh - 100px);
+        height: calc(100svh - 100px);
       }
 
       @include mixin.smartphone {
         margin-top: 0px;
         font-size: var.$font-size-md;
         padding: 0;
-        height: calc(100vh - 100px);
+        height: calc(100svh - 100px);
+      }
+
+      @include mixin.landscape-short {
+        margin-top: 0;
+        padding: 0;
+        height: auto;
       }
 
       .button-content {
@@ -83,6 +112,11 @@
           position: relative;
           margin-top: 15px;
         }
+
+        @include mixin.landscape-short {
+          position: relative;
+          margin-top: 12px;
+        }
       }
     }
 
@@ -94,6 +128,12 @@
         font-size: var.$font-size-xxl;
         padding-top: 0px;
         width: 60%;
+      }
+
+      @include mixin.landscape-short {
+        width: 100%;
+        margin: 4px 0;
+        font-size: clamp(var.$font-size-md, 5svh, var.$font-size-xxl);
       }
     }
 
@@ -130,7 +170,7 @@
       @include mixin.tablet {
         flex-direction: column;
         align-items: flex-start;
-        
+
       }
 
       @include mixin.smartphone {
@@ -145,6 +185,21 @@
         flex-direction: column;
         align-items: baseline;
         margin-top: 210px;
+      }
+
+      // Keep the cookbook teaser on one line right under the button: a 210px top
+      // margin would push it far below the fold on a 360px high screen.
+      @include mixin.landscape-short {
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        margin-top: 8px;
+
+        &>p {
+          width: 60%;
+          margin: 4px 0;
+          font-size: clamp(var.$font-size-md, 5svh, 22px);
+        }
       }
     }
 
@@ -176,6 +231,13 @@
         margin: 15px 0px 15px 0px;
         text-align: start;
       }
+
+      @include mixin.landscape-short {
+        position: relative;
+        margin: 4px 0;
+        font-size: var.$font-size-sm;
+        text-align: start;
+      }
     }
   }
 
@@ -184,7 +246,7 @@
     position: relative;
 
     min-height: 100%;
-    height: calc(100vh);
+    height: calc(100svh);
     margin-top: -169px;
     overflow: hidden;
 
@@ -201,6 +263,19 @@
       top: 169px;
       right: -50px;
       transform: translate(50%, 0%);
+    }
+
+    // In a short landscape viewport the decorative column stays inside its grid cell:
+    // a fixed element would float over the text while the page scrolls.
+    @include mixin.landscape-short {
+      position: relative;
+      top: auto;
+      right: auto;
+      width: 100%;
+      transform: none;
+      margin-top: 0;
+      height: calc(100svh - 100px);
+      min-height: 0;
     }
 
 
@@ -303,6 +378,15 @@
         display: block;
         opacity: 1;
         visibility: visible;
+      }
+    }
+
+    // Dishes proportional to the short viewport instead of 460px tiles that would be
+    // cut off by the bottom edge.
+    @include mixin.landscape-short {
+      app-images-component {
+        max-width: min(62svh, 320px);
+        max-height: min(62svh, 320px);
       }
     }
 

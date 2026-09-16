@@ -2,12 +2,13 @@
  * @file recipe-library.service.ts
  * @description Stores generated recipes in the Firebase Realtime Database and reads them back for the cookbook.
  */
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../environments/environment';
 import type { RecipeNutrition, RecipeStepDetail } from './preferences/preferences.models';
 import { parseStringArray, readOptionalRecipeFields, type OptionalRecipeFields } from './recipe-detail/recipe-detail.utils';
+import { findSeedRecipe, isSeedRecipeId, mergeWithSeedRecipes } from './cookbook/seed-recipes';
 
 /**
  * An ingredient as entered by the user.
@@ -113,6 +114,11 @@ type FirebaseRecipesResponse = Record<string, Partial<FirebaseRecipeRecord>>;
 export class RecipeLibraryService {
   private readonly http = inject(HttpClient);
   private readonly databaseUrl = environment.firebaseDatabaseUrl;
+  /**
+   * Likes given to preinstalled recipes in this browser session.
+   * Preinstalled recipes never reach Firebase, so their likes cannot be stored there either.
+   */
+  private readonly seedLikes = new Map<string, number>();
 
   /**
    * Saves each generated recipe as a new record in Firebase.
@@ -140,6 +146,10 @@ export class RecipeLibraryService {
    * @returns The new like count.
    */
   async incrementRecipeLike(recipeId: string): Promise<number> {
+    if (isSeedRecipeId(recipeId)) {
+      return this.incrementSeedRecipeLike(recipeId);
+    }
+
     const likesUrl = `${this.databaseUrl}/recipes/${recipeId}/likes.json`;
     const currentLikes = await firstValueFrom(this.http.get<number | null>(likesUrl));
     const nextLikes = (typeof currentLikes === 'number' ? currentLikes : 0) + 1;
@@ -147,19 +157,20 @@ export class RecipeLibraryService {
     return nextLikes;
   }
 
+  /** True when the last database read failed and only the preinstalled recipes are shown. */
+  readonly databaseUnavailable = signal(false);
+
   /**
-   * Loads all valid recipes from Firebase, newest first.
-   * @returns The validated cookbook recipes.
+   * Loads all valid recipes from Firebase and adds the preinstalled recipes, newest first.
+   * The preinstalled recipes are merged in memory only, so they are never stored in the database
+   * and cannot pile up over repeated loads.
+   * @returns The validated cookbook recipes plus the preinstalled ones.
    */
   async getAllRecipes(): Promise<CookbookRecipeRecord[]> {
-    const response = await firstValueFrom(this.http.get<FirebaseRecipesResponse | null>(`${this.databaseUrl}/recipes.json`));
-    if (!response) {
-      return [];
-    }
+    const storedRecipes = await this.loadStoredRecipes();
 
-    return Object.entries(response)
-      .map(([id, recipe]) => this.toCookbookRecipeRecord(id, recipe))
-      .filter((recipe): recipe is CookbookRecipeRecord => recipe !== null)
+    return mergeWithSeedRecipes(storedRecipes)
+      .map((recipe) => this.withSeedLikes(recipe))
       .sort((firstRecipe, secondRecipe) => {
         const firstDate = Date.parse(firstRecipe.createdAt);
         const secondDate = Date.parse(secondRecipe.createdAt);
@@ -168,17 +179,69 @@ export class RecipeLibraryService {
   }
 
   /**
-   * Loads a single recipe from Firebase.
-   * @param recipeId Firebase id of the recipe.
+   * Reads and validates the recipes stored in Firebase.
+   * A failing request is logged and treated like an empty database, so the cookbook keeps
+   * showing the preinstalled recipes while Firebase is unreachable.
+   * @returns The validated recipes, or an empty list when the database is empty or unreachable.
+   */
+  private async loadStoredRecipes(): Promise<CookbookRecipeRecord[]> {
+    try {
+      const response = await firstValueFrom(this.http.get<FirebaseRecipesResponse | null>(`${this.databaseUrl}/recipes.json`));
+      this.databaseUnavailable.set(false);
+      if (!response) {
+        return [];
+      }
+
+      return Object.entries(response)
+        .map(([id, recipe]) => this.toCookbookRecipeRecord(id, recipe))
+        .filter((recipe): recipe is CookbookRecipeRecord => recipe !== null);
+    } catch (error) {
+      console.error('Failed to load recipes from Firebase, showing the preinstalled recipes only:', error);
+      this.databaseUnavailable.set(true);
+      return [];
+    }
+  }
+
+  /**
+   * Loads a single recipe. Preinstalled recipes are resolved from the local seed list,
+   * every other id is read from Firebase.
+   * @param recipeId Firebase id, or id of a preinstalled recipe.
    * @returns The validated recipe, or null when it does not exist or is invalid.
    */
   async getRecipeById(recipeId: string): Promise<CookbookRecipeRecord | null> {
+    const seedRecipe = findSeedRecipe(recipeId);
+    if (seedRecipe) {
+      return this.withSeedLikes(seedRecipe);
+    }
+
     const response = await firstValueFrom(this.http.get<Partial<FirebaseRecipeRecord> | null>(`${this.databaseUrl}/recipes/${recipeId}.json`));
     if (!response) {
       return null;
     }
 
     return this.toCookbookRecipeRecord(recipeId, response);
+  }
+
+  /**
+   * Counts a like of a preinstalled recipe in memory instead of writing it to Firebase.
+   * @param recipeId Id of the preinstalled recipe.
+   * @returns The new like count for this browser session.
+   */
+  private incrementSeedRecipeLike(recipeId: string): number {
+    const currentLikes = this.seedLikes.get(recipeId) ?? findSeedRecipe(recipeId)?.likes ?? 0;
+    const nextLikes = currentLikes + 1;
+    this.seedLikes.set(recipeId, nextLikes);
+    return nextLikes;
+  }
+
+  /**
+   * Applies the likes a preinstalled recipe collected in this session.
+   * @param recipe A cookbook recipe, preinstalled or loaded from Firebase.
+   * @returns The recipe with its current like count.
+   */
+  private withSeedLikes(recipe: CookbookRecipeRecord): CookbookRecipeRecord {
+    const likes = this.seedLikes.get(recipe.id);
+    return typeof likes === 'number' ? { ...recipe, likes } : recipe;
   }
 
   /**

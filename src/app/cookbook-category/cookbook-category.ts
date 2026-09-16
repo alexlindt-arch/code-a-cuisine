@@ -24,6 +24,9 @@ export const RECIPES_PER_PAGE = 20;
 export class CookbookCategoryPage {
   private readonly route = inject(ActivatedRoute);
   private readonly recipeLibraryService = inject(RecipeLibraryService);
+
+  /** True when Firebase could not be read, so only the preinstalled recipes are listed. */
+  readonly databaseUnavailable = this.recipeLibraryService.databaseUnavailable;
   readonly pageSize = RECIPES_PER_PAGE;
   readonly selectedCategory = signal<CookbookCategory | null>(null);
   readonly recipes = signal<CookbookRecipeRecord[]>([]);

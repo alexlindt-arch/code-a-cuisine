@@ -5,7 +5,7 @@ $macro-carbs-color: #D4953A;
 
 .recipe-detail-page {
   background-color: var.$secondary-bg;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100svh - 72px);
 
   // Neutralize the global section/header element styles for nested semantic elements.
   section {

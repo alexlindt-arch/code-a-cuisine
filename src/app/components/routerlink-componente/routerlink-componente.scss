@@ -57,6 +57,9 @@ a.router-link.--dark {
   flex-direction: row-reverse;
   gap: 8px;
   width: 100%;
+  // No inner left padding: the back link is the first element of the page and has to
+  // start on the same vertical line as the content below it.
+  padding-left: 0;
   @include mix.smartphone {
     font-size: 0px;
   }
@@ -73,6 +76,8 @@ a.router-link.--dark-bottom {
   color: var.$secondary-text-color;
   gap: 8px;
   width: 100%;
+  // Ends on the right edge of the content column, like the cards above it.
+  padding-right: 0;
   @include mix.smartphone {
   font-size: 18px;
   }

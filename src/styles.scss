@@ -33,12 +33,12 @@ h1 {
 }
 
 section {
-  height: calc(100svh - 100px);
+  // min-height, never a fixed height: a section shorter than its own content stopped
+  // painting its background halfway down the page, which left a white bar below the
+  // content with the text sticking into it (most visible in landscape on phones).
+  min-height: calc(100svh - 100px);
   background-color: var.$primary-bg;
   color: var.$primary-text-color;
-  @include mixin.landscape-min {
-    height: 100%;
-  }
 }
 
 .content-limited {

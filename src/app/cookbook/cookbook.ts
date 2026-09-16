@@ -20,6 +20,9 @@ import { RecipeLibraryService, type CookbookRecipeRecord } from '../recipe-libra
 export class Cookbook {
   private readonly recipeLibraryService = inject(RecipeLibraryService);
 
+  /** True when Firebase could not be read, so only the preinstalled recipes are listed. */
+  readonly databaseUnavailable = this.recipeLibraryService.databaseUnavailable;
+
   readonly categories = cookbookCategories;
   readonly allRecipesPath = `/cookbook/${ALL_RECIPES_SLUG}`;
   readonly recipes = signal<CookbookRecipeRecord[]>([]);

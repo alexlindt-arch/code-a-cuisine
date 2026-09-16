@@ -18,10 +18,11 @@
             <img src="assets/icons/heart.png" alt="">
           </div>
 
+          @if (databaseUnavailable()) {
+          <p class="favorites-status favorites-status-error" role="status">Showing the preinstalled recipes only, the recipe database is currently unreachable.</p>
+          }
           @if (loadingState() === 'loading') {
           <p class="favorites-status" role="status">Loading recipes from cookbook database...</p>
-          } @else if (loadingState() === 'error') {
-          <p class="favorites-status favorites-status-error" role="alert">Could not load recipes from database.</p>
           } @else if (featuredRecipes().length === 0) {
           <p class="favorites-status">No recipes saved in the database yet.</p>
           } @else {
