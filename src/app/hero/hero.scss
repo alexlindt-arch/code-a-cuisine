@@ -73,21 +73,18 @@
         margin-left: 8px;
         font-size: var.$font-size-md;
         padding: 0;
-        min-height: calc(100svh - 169px);
       }
 
       @include mixin.tablet {
         margin-top: 0px;
         font-size: var.$font-size-md;
         padding: 0;
-        min-height: calc(100svh - 100px);
       }
 
       @include mixin.smartphone {
         margin-top: 0px;
         font-size: var.$font-size-md;
         padding: 0;
-        min-height: calc(100svh - 100px);
       }
 
       @include mixin.landscape-short {
@@ -144,7 +141,7 @@
       align-items: center;
       width: 100%;
       text-align: start;
-      margin-top: calc(50% - 169px);
+      margin-top: auto;
       padding-bottom: 0;
 
       &>p {
@@ -164,7 +161,7 @@
           text-align: left;
         }
 
-        margin-top: calc(50% - 210px);
+        margin-top: auto;
       }
 
       @include mixin.tablet {
@@ -177,14 +174,14 @@
         position: relative;
         flex-direction: column;
         align-items: baseline;
-        margin-top: 40px;
+        margin-top: auto;
       }
 
       @include mixin.landscape-min {
         position: relative;
         flex-direction: column;
         align-items: baseline;
-        margin-top: 210px;
+        margin-top: auto;
       }
 
       // Keep the cookbook teaser on one line right under the button: a 210px top
@@ -390,5 +387,45 @@
       }
     }
 
+  }
+}
+
+// Short viewports (laptops, split screens, phones in landscape): scale the hero with the
+// available height and trim the paddings, so the cookbook teaser and the imprint link stay
+// visible without scrolling.
+@media only screen and (max-height: 800px) {
+  .content-limited {
+    padding-top: 24px;
+  }
+
+  .home-content .content-left {
+    .top-content > h1 {
+      font-size: clamp(28px, 9svh, 64px);
+      line-height: 1.05;
+    }
+
+    .top-content > p {
+      margin: 6px 0;
+      font-size: clamp(16px, 3.4svh, 24px);
+    }
+
+    .top-content .button-content {
+      margin-top: clamp(12px, 3svh, 55px);
+    }
+
+    .bottom-section > p {
+      font-size: clamp(20px, 4.6svh, 36px);
+    }
+
+    .impressum-link {
+      margin: 10px 0;
+    }
+  }
+
+  // The decorative column is capped to the viewport (with overflow: hidden): a percentage
+  // height would resolve to auto here and stack all plates to ~1400px of page height.
+  .home-content .content-right {
+    height: calc(100svh - 100px);
+    min-height: 0;
   }
 }
