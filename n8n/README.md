@@ -78,8 +78,8 @@ A recipe in `result.recipes` (always 3):
 
    Counters live in Firebase `quota/<date>/ips/<ip>` and `quota/<date>/global`; workflow static data is the fallback if Firebase is unreachable.
 3. **Prepare Prompt** tells the model to use at least 70 % of the ingredients, add at most 3 basic extras, scale quantities to the portions, respect time frame, cuisine and diet, give every cook their own tasks, mark parallel steps, use waiting times and estimate nutrition per portion and in total.
-4. **Generate Recipes** (Basic LLM Chain with Ollama Cloud `gemma4:31b` in JSON mode) generates the JSON. There is no structured output parser on purpose: its auto-fix call re-prompts the model without the ingredients, so parsing and checking happen in the next node.
-5. **Validate Recipe Result** checks the answer. Broken rules send it back once with the reasons (**Route on Retry**); an unusable second answer becomes a 500.
+4. **Generate Recipes** (Basic LLM Chain with Ollama Cloud `gemma4:31b`) generates the JSON. The **Structured Output Parser** appends the JSON schema to the prompt and parses the answer. Its auto-fix option stays off: the repair call re-prompts the model without the ingredients.
+5. **Validate Recipe Result** only checks what the schema cannot express: at least 70 % of the ingredients used, at most 3 extras, tasks for every cook and three different recipes. Broken rules send the answer back once with the reasons (**Route on Retry**); an unusable second answer becomes a 500.
 6. **Log Recipe Error** writes failures to the execution log and Firebase `logs/recipeErrors`.
 
 Every node has a description (visible under the node) and the canvas is split into sticky-note sections.

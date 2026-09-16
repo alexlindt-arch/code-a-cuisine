@@ -54,7 +54,7 @@ flowchart LR
 1. The app sends the ingredient list and preferences to the n8n webhook `code-a-cuisine-recipe`.
 2. The workflow validates the request again (ingredients, quantities, units, portions, cooks, time, cuisine, diets) and answers invalid input with 400.
 3. It reads the caller IP (IPv4 or IPv6) from the proxy headers and enforces 3 recipes per IP per day, 12 per day in total and a 15 second throttle, stored in Firebase (429 with a readable message).
-4. A Basic LLM Chain asks the model in JSON mode for exactly three recipes: at least 70 % of your ingredients, at most 3 extras, scaled quantities, tasks per cook with parallel steps, and nutrition per portion and in total.
+4. A Basic LLM Chain with a structured output parser asks the model for exactly three recipes in a fixed JSON schema: at least 70 % of your ingredients, at most 3 extras, scaled quantities, tasks per cook with parallel steps, and nutrition per portion and in total.
 5. The answer is checked against these rules and retried once with feedback. Failures are logged in Firebase and answered with 500; crashes trigger the error workflow with an email.
 6. The app stores the recipes in Firebase so they show up in the cookbook.
 
