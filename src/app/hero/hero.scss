@@ -2,6 +2,7 @@
 @use '../../scss/abstract/mixings' as mixin;
 
 .home-content {
+  position: relative;
   display: grid;
   justify-content: space-between;
   flex-direction: column;
@@ -30,6 +31,7 @@
 
   .content-left {
     position: relative;
+    z-index: 1;
     @include mixin.flex-between();
     flex-direction: column;
     min-height: calc(100svh - 169px);
@@ -55,8 +57,12 @@
           width: 60%;
         }
 
+        // Keep "Code a Cuisine" on a single line on phones: a 60% wide headline wrapped
+        // it into two or three lines.
         @include mixin.smartphone {
-          width: 60%;
+          width: 100%;
+          white-space: nowrap;
+          font-size: clamp(20px, 7.4vw, 40px);
         }
 
         // Scale the headline with the available height: the global 8vw would be
@@ -122,9 +128,9 @@
       width: 100%;
 
       @include mixin.smartphone {
-        font-size: var.$font-size-xxl;
+        font-size: var.$font-size-md;
         padding-top: 0px;
-        width: 60%;
+        width: 100%;
       }
 
       @include mixin.landscape-short {
@@ -240,11 +246,12 @@
 
   .content-right {
     @include mixin.flex-start();
-    position: relative;
-
-    min-height: 100%;
-    height: calc(100svh);
-    margin-top: -169px;
+    position: absolute;
+    grid-column: 2;
+    top: -169px;
+    right: 0;
+    bottom: 0;
+    left: 0;
     overflow: hidden;
 
     @include mixin.tablet {
@@ -258,27 +265,34 @@
       position: fixed;
       width: 100%;
       top: 169px;
-      right: -50px;
+      right: -110px;
       transform: translate(50%, 0%);
     }
 
     // In a short landscape viewport the decorative column stays inside its grid cell:
     // a fixed element would float over the text while the page scrolls.
     @include mixin.landscape-short {
-      position: relative;
-      top: auto;
-      right: auto;
-      width: 100%;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: auto;
       transform: none;
       margin-top: 0;
-      height: calc(100svh - 100px);
+      height: auto;
       min-height: 0;
+
+      // The header is only 100px high here, so the plates must not be pulled up by 169px.
+      app-images-component:nth-child(1) {
+        margin-top: 0;
+      }
     }
 
 
     app-images-component:nth-child(1) {
       height: auto;
-      margin-top: -7%;
+      margin-top: -169px;
       max-width: 460px;
       max-height: 460px;
       transform: translateY(0%);
@@ -393,7 +407,7 @@
 // Short viewports (laptops, split screens, phones in landscape): scale the hero with the
 // available height and trim the paddings, so the cookbook teaser and the imprint link stay
 // visible without scrolling.
-@media only screen and (max-height: 800px) {
+@media only screen and (min-width: 660px) and (max-height: 800px) {
   .content-limited {
     padding-top: 24px;
   }
@@ -425,7 +439,7 @@
   // The decorative column is capped to the viewport (with overflow: hidden): a percentage
   // height would resolve to auto here and stack all plates to ~1400px of page height.
   .home-content .content-right {
-    height: calc(100svh - 100px);
+    height: auto;
     min-height: 0;
   }
 }
