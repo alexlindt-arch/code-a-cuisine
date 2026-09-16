@@ -125,6 +125,11 @@ $hero-card-pad-sm: 12px;
   padding: 0;
   list-style: none;
 
+  // On phones one card per row, so a second column can never be cut off by the screen edge.
+  @include mix.smartphone {
+    grid-template-columns: 1fr;
+  }
+
   li {
     display: flex;
     min-width: 0;
