@@ -78,7 +78,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Enforces the per-IP daily quota, the global daily quota and a short throttle between requests of one IP.\n// Firebase only accepts \"+1\" writes on these counters (database.rules.json), so nobody can reset them,\n// and a write that loses a race against a parallel request is rejected instead of passing twice.\nconst PER_IP_LIMIT = 3;\nconst GLOBAL_LIMIT = 12;\nconst THROTTLE_MS = 15000;\n// Your own Firebase Realtime Database URL (same value as firebaseDatabaseUrl in the Angular environment).\nconst dbUrl = 'https://code-a-cuisine-7b803-default-rtdb.europe-west1.firebasedatabase.app';\n// Code nodes on n8n Cloud have no global fetch, so Firebase is reached through n8n's HTTP helper.\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nconst IPV4 = /^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}$/;\n\n// Expands an IPv6 address to 8 groups of 4 hex digits, or returns null when it is not valid.\n// IPv4-mapped addresses (::ffff:1.2.3.4) are handled as the IPv4 address they carry.\nconst expandIpv6 = (value) => {\n  let text = value.toLowerCase().replace(/^\\[|\\]$/g, '').split('%')[0];\n  const embedded = text.match(/^(.*:)(\\d+\\.\\d+\\.\\d+\\.\\d+)$/);\n  if (embedded) {\n    if (!IPV4.test(embedded[2])) return null;\n    const [a, b, c, d] = embedded[2].split('.').map(Number);\n    text = `${embedded[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;\n  }\n  if (!/^[0-9a-f:]+$/.test(text) || text.split('::').length > 2) return null;\n  const [head, tail] = text.includes('::') ? text.split('::') : [text, null];\n  const headGroups = head ? head.split(':') : [];\n  const tailGroups = tail ? tail.split(':') : [];\n  const missing = 8 - headGroups.length - tailGroups.length;\n  if (tail === null ? missing !== 0 : missing < 1) return null;\n  const groups = [...headGroups, ...Array(tail === null ? 0 : missing).fill('0'), ...tailGroups];\n  if (groups.length !== 8 || groups.some((group) => !/^[0-9a-f]{1,4}$/.test(group))) return null;\n  return groups.map((group) => group.padStart(4, '0'));\n};\n\n// Returns the address in canonical form plus the key the quota is counted under.\n// IPv6 is counted per /64 network: one connection usually owns a whole /64.\nconst parseIp = (raw) => {\n  const value = String(raw ?? '').trim();\n  if (IPV4.test(value)) return { ip: value, version: 'ipv4', quotaKey: value };\n  const groups = expandIpv6(value);\n  if (!groups) return null;\n  if (groups.slice(0, 5).every((group) => group === '0000') && groups[5] === 'ffff') {\n    const n = parseInt(groups[6] + groups[7], 16);\n    const ipv4 = [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');\n    return { ip: ipv4, version: 'ipv4', quotaKey: ipv4 };\n  }\n  return { ip: groups.join(':'), version: 'ipv6', quotaKey: `${groups.slice(0, 4).join(':')}::/64` };\n};\n\n// The webhook runs behind the n8n Cloud proxy. Only headers that proxy sets itself are trusted:\n// values the browser could send (the left part of x-forwarded-for, a clientIp in the body) are ignored.\nconst headers = $json.headers ?? {};\nconst forwardedFor = String(headers['x-forwarded-for'] || '').split(',').map((part) => part.trim()).filter(Boolean);\nconst candidates = [\n  headers['cf-connecting-ip'],\n  headers['x-real-ip'],\n  forwardedFor[forwardedFor.length - 1],\n];\nconst parsed = candidates.map(parseIp).find(Boolean) ?? null;\nconst ip = parsed?.ip ?? 'unknown';\nconst ipVersion = parsed?.version ?? 'unknown';\n\n// The database never sees the address itself, only a SHA-256 hash of the quota key.\nlet ipKey = 'unknown';\nif (parsed) {\n  try {\n    ipKey = require('crypto').createHash('sha256').update(`code-a-cuisine:${parsed.quotaKey}`).digest('hex').slice(0, 32);\n  } catch (error) {\n    ipKey = parsed.quotaKey.replace(/[^a-zA-Z0-9]/g, '-');\n  }\n}\n\nconst now = Date.now();\nconst today = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });\nconst perIpPath = `${dbUrl}/quota/${today}/ips/${ipKey}.json`;\nconst globalPath = `${dbUrl}/quota/${today}/global.json`;\n\nconst readJson = async (url) => {\n  try {\n    return { ok: true, data: await httpRequest({ method: 'GET', url, json: true }) };\n  } catch (error) {\n    return { ok: false, data: null, error: error.message };\n  }\n};\nconst writeJson = (url, value) => httpRequest({\n  method: 'PUT',\n  url,\n  body: JSON.stringify(value),\n  headers: { 'Content-Type': 'application/json' },\n});\n\nconst buildQuota = (ipUsed, globalCount) => ({\n  date: today,\n  ipAddress: ip,\n  ipVersion,\n  perIpLimit: PER_IP_LIMIT,\n  perIpUsed: ipUsed,\n  perIpRemaining: Math.max(0, PER_IP_LIMIT - ipUsed),\n  globalLimit: GLOBAL_LIMIT,\n  globalUsed: globalCount,\n  globalRemaining: Math.max(0, GLOBAL_LIMIT - globalCount),\n});\n\n// Reads both counters and decides; returns the decision plus the values to write.\nconst evaluate = async () => {\n  const [ipResult, globalResult] = await Promise.all([readJson(perIpPath), readJson(globalPath)]);\n  if (!ipResult.ok || !globalResult.ok) {\n    return { ok: false, code: 'QUOTA_UNAVAILABLE', message: 'The usage limit could not be checked right now. Please try again in a moment.', perIpUsed: 0, globalUsed: 0 };\n  }\n  const remoteIp = ipResult.data && typeof ipResult.data === 'object' ? ipResult.data : {};\n  const perIpUsed = Number(remoteIp.count) || 0;\n  const lastRequestAt = Number(remoteIp.lastRequestAt) || 0;\n  const globalUsed = Number(globalResult.data) || 0;\n  const waitSeconds = Math.ceil((THROTTLE_MS - (now - lastRequestAt)) / 1000);\n\n  if (ipVersion === 'unknown') {\n    return { ok: false, code: 'IP_NOT_DETECTED', message: 'Your IP address could not be detected, so no quota can be assigned. Please try again later.', perIpUsed, globalUsed };\n  }\n  if (perIpUsed >= PER_IP_LIMIT) {\n    return { ok: false, code: 'QUOTA_EXCEEDED', message: `Daily limit reached: ${PER_IP_LIMIT} recipe generations per IP address per day. Please come back tomorrow.`, perIpUsed, globalUsed };\n  }\n  if (globalUsed >= GLOBAL_LIMIT) {\n    return { ok: false, code: 'GLOBAL_QUOTA_EXCEEDED', message: `The app has reached its daily limit of ${GLOBAL_LIMIT} recipe generations. Please come back tomorrow.`, perIpUsed, globalUsed };\n  }\n  if (now - lastRequestAt < THROTTLE_MS) {\n    return { ok: false, code: 'THROTTLED', message: `Too many requests. Please wait ${waitSeconds} seconds before generating again.`, perIpUsed, globalUsed };\n  }\n  return { ok: true, code: null, message: null, perIpUsed, globalUsed };\n};\n\n// Books one generation. Firebase rejects a write whose count is not exactly the stored value + 1,\n// so when a parallel request was faster the counters are read again once before giving up.\nlet decision = await evaluate();\nlet booked = false;\nfor (let attempt = 1; decision.ok && !booked && attempt <= 2; attempt += 1) {\n  try {\n    await writeJson(globalPath, decision.globalUsed + 1);\n    await writeJson(perIpPath, { count: decision.perIpUsed + 1, lastRequestAt: now, ipVersion });\n    booked = true;\n  } catch (error) {\n    console.log(`Quota booking attempt ${attempt} was rejected: ${error.message}`);\n    decision = await evaluate();\n  }\n}\nif (decision.ok && !booked) {\n  decision = { ...decision, ok: false, code: 'THROTTLED', message: 'Too many requests at the same time. Please try again in a few seconds.' };\n}\n\nconst quota = booked\n  ? buildQuota(decision.perIpUsed + 1, decision.globalUsed + 1)\n  : buildQuota(decision.perIpUsed, decision.globalUsed);\nif (!decision.ok) {\n  console.log(`Quota rejected (${decision.code}) for ${ipVersion} key ${ipKey}`);\n}\n\nreturn [{\n  json: {\n    ...$json,\n    ipAddress: ip,\n    ipVersion,\n    ipKey,\n    quotaDate: today,\n    quotaOk: decision.ok,\n    quotaErrorCode: decision.code,\n    quotaExceededMessage: decision.message,\n    quota,\n  },\n}];\n"
+        "jsCode": "// Enforces the per-IP daily quota, the global daily quota and a short throttle between requests of one IP.\n// Firebase only accepts \"+1\" writes on these counters (database.rules.json), so nobody can reset them,\n// and a write that loses a race against a parallel request is rejected instead of passing twice.\nconst PER_IP_LIMIT = 3;\nconst GLOBAL_LIMIT = 12;\nconst THROTTLE_MS = 15000;\n// Your own Firebase Realtime Database URL (same value as firebaseDatabaseUrl in the Angular environment).\nconst dbUrl = 'https://code-a-cuisine-7b803-default-rtdb.europe-west1.firebasedatabase.app';\n// Code nodes on n8n Cloud have no global fetch, so Firebase is reached through n8n's HTTP helper.\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nconst IPV4 = /^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}$/;\n\n// Expands an IPv6 address to 8 groups of 4 hex digits, or returns null when it is not valid.\n// IPv4-mapped addresses (::ffff:1.2.3.4) are handled as the IPv4 address they carry.\nconst expandIpv6 = (value) => {\n  let text = value.toLowerCase().replace(/^\\[|\\]$/g, '').split('%')[0];\n  const embedded = text.match(/^(.*:)(\\d+\\.\\d+\\.\\d+\\.\\d+)$/);\n  if (embedded) {\n    if (!IPV4.test(embedded[2])) return null;\n    const [a, b, c, d] = embedded[2].split('.').map(Number);\n    text = `${embedded[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;\n  }\n  if (!/^[0-9a-f:]+$/.test(text) || text.split('::').length > 2) return null;\n  const [head, tail] = text.includes('::') ? text.split('::') : [text, null];\n  const headGroups = head ? head.split(':') : [];\n  const tailGroups = tail ? tail.split(':') : [];\n  const missing = 8 - headGroups.length - tailGroups.length;\n  if (tail === null ? missing !== 0 : missing < 1) return null;\n  const groups = [...headGroups, ...Array(tail === null ? 0 : missing).fill('0'), ...tailGroups];\n  if (groups.length !== 8 || groups.some((group) => !/^[0-9a-f]{1,4}$/.test(group))) return null;\n  return groups.map((group) => group.padStart(4, '0'));\n};\n\n// Returns the address in canonical form plus the key the quota is counted under.\n// IPv6 is counted per /64 network: one connection usually owns a whole /64.\nconst parseIp = (raw) => {\n  const value = String(raw ?? '').trim();\n  if (IPV4.test(value)) return { ip: value, version: 'ipv4', quotaKey: value };\n  const groups = expandIpv6(value);\n  if (!groups) return null;\n  if (groups.slice(0, 5).every((group) => group === '0000') && groups[5] === 'ffff') {\n    const n = parseInt(groups[6] + groups[7], 16);\n    const ipv4 = [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');\n    return { ip: ipv4, version: 'ipv4', quotaKey: ipv4 };\n  }\n  return { ip: groups.join(':'), version: 'ipv6', quotaKey: `${groups.slice(0, 4).join(':')}::/64` };\n};\n\n// n8n Cloud sits behind Cloudflare: cf-connecting-ip is set by Cloudflare itself and cannot be\n// sent by the browser; x-real-ip is the fallback set by the n8n proxy. x-forwarded-for is not used,\n// its last entry is a Cloudflare address and the first one can be forged by the client.\nconst headers = $json.headers ?? {};\nconst candidates = [headers['cf-connecting-ip'], headers['x-real-ip']];\nconst parsed = candidates.map(parseIp).find(Boolean) ?? null;\nconst ip = parsed?.ip ?? 'unknown';\nconst ipVersion = parsed?.version ?? 'unknown';\n\n// The database never sees the address itself, only a SHA-256 hash of the quota key.\nlet ipKey = 'unknown';\nif (parsed) {\n  try {\n    ipKey = require('crypto').createHash('sha256').update(`code-a-cuisine:${parsed.quotaKey}`).digest('hex').slice(0, 32);\n  } catch (error) {\n    ipKey = parsed.quotaKey.replace(/[^a-zA-Z0-9]/g, '-');\n  }\n}\n\nconst now = Date.now();\nconst today = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });\nconst perIpPath = `${dbUrl}/quota/${today}/ips/${ipKey}.json`;\nconst globalPath = `${dbUrl}/quota/${today}/global.json`;\n\nconst readJson = async (url) => {\n  try {\n    return { ok: true, data: await httpRequest({ method: 'GET', url, json: true }) };\n  } catch (error) {\n    return { ok: false, data: null, error: error.message };\n  }\n};\nconst writeJson = (url, value) => httpRequest({\n  method: 'PUT',\n  url,\n  body: JSON.stringify(value),\n  headers: { 'Content-Type': 'application/json' },\n});\n\nconst buildQuota = (ipUsed, globalCount) => ({\n  date: today,\n  ipAddress: ip,\n  ipVersion,\n  perIpLimit: PER_IP_LIMIT,\n  perIpUsed: ipUsed,\n  perIpRemaining: Math.max(0, PER_IP_LIMIT - ipUsed),\n  globalLimit: GLOBAL_LIMIT,\n  globalUsed: globalCount,\n  globalRemaining: Math.max(0, GLOBAL_LIMIT - globalCount),\n});\n\n// Reads both counters and decides; returns the decision plus the values to write.\nconst evaluate = async () => {\n  const [ipResult, globalResult] = await Promise.all([readJson(perIpPath), readJson(globalPath)]);\n  if (!ipResult.ok || !globalResult.ok) {\n    return { ok: false, code: 'QUOTA_UNAVAILABLE', message: 'The usage limit could not be checked right now. Please try again in a moment.', perIpUsed: 0, globalUsed: 0 };\n  }\n  const remoteIp = ipResult.data && typeof ipResult.data === 'object' ? ipResult.data : {};\n  const perIpUsed = Number(remoteIp.count) || 0;\n  const lastRequestAt = Number(remoteIp.lastRequestAt) || 0;\n  const globalUsed = Number(globalResult.data) || 0;\n  const waitSeconds = Math.ceil((THROTTLE_MS - (now - lastRequestAt)) / 1000);\n\n  if (ipVersion === 'unknown') {\n    return { ok: false, code: 'IP_NOT_DETECTED', message: 'Your IP address could not be detected, so no quota can be assigned. Please try again later.', perIpUsed, globalUsed };\n  }\n  if (perIpUsed >= PER_IP_LIMIT) {\n    return { ok: false, code: 'QUOTA_EXCEEDED', message: `Daily limit reached: ${PER_IP_LIMIT} recipe generations per IP address per day. Please come back tomorrow.`, perIpUsed, globalUsed };\n  }\n  if (globalUsed >= GLOBAL_LIMIT) {\n    return { ok: false, code: 'GLOBAL_QUOTA_EXCEEDED', message: `The app has reached its daily limit of ${GLOBAL_LIMIT} recipe generations. Please come back tomorrow.`, perIpUsed, globalUsed };\n  }\n  if (now - lastRequestAt < THROTTLE_MS) {\n    return { ok: false, code: 'THROTTLED', message: `Too many requests. Please wait ${waitSeconds} seconds before generating again.`, perIpUsed, globalUsed };\n  }\n  return { ok: true, code: null, message: null, perIpUsed, globalUsed };\n};\n\n// Books one generation. Firebase rejects a write whose count is not exactly the stored value + 1,\n// so when a parallel request was faster the counters are read again once before giving up.\nlet decision = await evaluate();\nlet booked = false;\nfor (let attempt = 1; decision.ok && !booked && attempt <= 2; attempt += 1) {\n  try {\n    await writeJson(globalPath, decision.globalUsed + 1);\n    await writeJson(perIpPath, { count: decision.perIpUsed + 1, lastRequestAt: now, ipVersion });\n    booked = true;\n  } catch (error) {\n    console.log(`Quota booking attempt ${attempt} was rejected: ${error.message}`);\n    decision = await evaluate();\n  }\n}\nif (decision.ok && !booked) {\n  decision = { ...decision, ok: false, code: 'THROTTLED', message: 'Too many requests at the same time. Please try again in a few seconds.' };\n}\n\nconst quota = booked\n  ? buildQuota(decision.perIpUsed + 1, decision.globalUsed + 1)\n  : buildQuota(decision.perIpUsed, decision.globalUsed);\nif (!decision.ok) {\n  console.log(`Quota rejected (${decision.code}) for ${ipVersion} key ${ipKey}`);\n}\n\nreturn [{\n  json: {\n    ...$json,\n    ipAddress: ip,\n    ipVersion,\n    ipKey,\n    quotaDate: today,\n    quotaOk: decision.ok,\n    quotaErrorCode: decision.code,\n    quotaExceededMessage: decision.message,\n    quota,\n  },\n}];\n"
       },
       "id": "ffd8e035-5ed9-49f5-a6f7-1c50d0dbee1a",
       "name": "Check IP Quota",
@@ -88,7 +88,7 @@
         720,
         300
       ],
-      "notes": "Counts 3 generations per IP (IPv6 per /64) and 12 per day in total, plus a 15 s throttle. Only proxy headers are trusted, the IP is stored as a hash, and Firebase accepts only +1 writes on the counters.",
+      "notes": "Counts 3 generations per IP (IPv6 per /64) and 12 per day in total, plus a 15 s throttle. The IP comes from the Cloudflare header, is stored only as a hash, and Firebase accepts only +1 writes on the counters.",
       "notesInFlow": true,
       "onError": "continueErrorOutput"
     },
@@ -135,7 +135,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Builds the recipe prompt from the validated request. On a retry the rejection reasons are appended.\nconst { request, attempt = 1, retryFeedback = null } = $json;\nconst { ingredients, preferences } = request;\n\nconst COOKING_TIMES = {\n  quick: 'quick, at most 20 minutes in total',\n  medium: 'medium, between 20 and 45 minutes in total',\n  complex: 'elaborate, more than 45 minutes in total',\n};\nconst CUISINES = {\n  german: 'German cuisine',\n  italian: 'Italian cuisine',\n  indian: 'Indian cuisine',\n  japanese: 'Japanese cuisine',\n  gourmet: 'Gourmet / fine dining',\n  fusion: 'Fusion, an international mix of styles',\n};\nconst DIET_RULES = {\n  vegetarian: 'Vegetarian: no meat, poultry, fish, seafood or gelatine.',\n  vegan: 'Vegan: no animal products at all (no meat, fish, dairy, eggs, honey or gelatine).',\n  keto: 'Keto: at most 20 g net carbohydrates per portion; no sugar, flour, rice, pasta, potatoes or bread.',\n  none: 'No dietary restrictions.',\n};\nconst UNIT_LABELS = { gram: 'g', kg: 'kg', ml: 'ml', liter: 'l', piece: 'piece(s)' };\n\nconst minUsed = Math.ceil(ingredients.length * 0.7);\nconst ingredientList = ingredients\n  .map((item) => `- ${item.name}: ${item.quantity} ${UNIT_LABELS[item.unit] ?? item.unit} available`)\n  .join('\\n');\nconst dietRules = preferences.diets.map((diet) => `  - ${DIET_RULES[diet]}`).join('\\n');\nconst cooksRule = preferences.cooks > 1\n  ? `Split the work between the ${preferences.cooks} cooks so that every cook has their own tasks. Steps that different cooks do at the same time get \"parallel\": true.`\n  : 'There is only one cook: set \"cook\" to 1 and \"parallel\" to false for every step.';\n\nlet prompt = `Create exactly 3 recipes from the ingredients a home cook already has.\n\nAvailable ingredients:\n${ingredientList}\n\nPreferences:\n- Portions: ${preferences.portions}\n- People cooking together: ${preferences.cooks}\n- Time frame: ${COOKING_TIMES[preferences.cookingTime]}\n- Cuisine: ${CUISINES[preferences.cuisine]}\n- Diet:\n${dietRules}\n\nRules:\n1. The 3 recipes must clearly differ in cooking method (for example pan, oven, raw, soup) or flavour profile.\n2. Each recipe uses at least ${minUsed} of the ${ingredients.length} available ingredients. Copy their names exactly as written above. Leave out an available ingredient only if it breaks the diet rules.\n3. Each recipe may add at most 3 extra basic ingredients (for example salt, pepper, oil, water or a common spice). List them in \"extraIngredients\" and also in \"ingredients\".\n4. Scale all quantities in \"ingredients\" for exactly ${preferences.portions} portion(s) and never use more than the available amount. Format: \"<quantity> <unit> <name>\", for example \"200 g pasta\".\n5. \"estimatedMinutes\" must fit the time frame.\n6. Use spices, techniques and dishes that are typical for the cuisine.\n7. Steps are chronological, easy to follow for beginners and 4 to 12 per recipe. Every step has a short \"title\" (2-6 words), a clear \"instruction\", \"cook\" (1 to ${preferences.cooks}) and \"durationMinutes\".\n8. ${cooksRule}\n9. Use waiting times (boiling, baking, resting) for other preparations and say so in the instruction.\n10. \"nutrition\" contains realistic estimates in kcal and grams: \"perPortion\" for one portion and \"total\" for the whole recipe (${preferences.portions} portion(s)).`;\n\nif (retryFeedback) {\n  prompt += `\\n\\nYour previous answer was rejected for these reasons: ${retryFeedback}\\nCreate new recipes that fix every point.`;\n}\n\nreturn [{ json: { ...$json, prompt, attempt, retryFeedback } }];\n"
+        "jsCode": "// Builds the recipe prompt and the JSON schema for the Structured Output Parser from the validated\n// request. The recipe rules live in the schema, so the parser checks them and lets the model fix\n// a broken answer (auto-fix) instead of a hand-written validation loop.\nconst { request } = $json;\nconst { ingredients, preferences } = request;\n\nconst COOKING_TIMES = {\n  quick: { text: 'quick, at most 20 minutes in total', min: 5, max: 20 },\n  medium: { text: 'medium, between 20 and 45 minutes in total', min: 20, max: 45 },\n  complex: { text: 'elaborate, more than 45 minutes in total', min: 46, max: 300 },\n};\nconst CUISINES = {\n  german: 'German cuisine',\n  italian: 'Italian cuisine',\n  indian: 'Indian cuisine',\n  japanese: 'Japanese cuisine',\n  gourmet: 'Gourmet / fine dining',\n  fusion: 'Fusion, an international mix of styles',\n};\nconst DIET_RULES = {\n  vegetarian: 'Vegetarian: no meat, poultry, fish, seafood or gelatine.',\n  vegan: 'Vegan: no animal products at all (no meat, fish, dairy, eggs, honey or gelatine).',\n  keto: 'Keto: at most 20 g net carbohydrates per portion; no sugar, flour, rice, pasta, potatoes or bread.',\n  none: 'No dietary restrictions.',\n};\nconst UNIT_LABELS = { gram: 'g', kg: 'kg', ml: 'ml', liter: 'l', piece: 'piece(s)' };\n\nconst names = [...new Set(ingredients.map((item) => item.name))];\nconst minUsed = Math.ceil(names.length * 0.7);\nconst time = COOKING_TIMES[preferences.cookingTime];\nconst ingredientList = ingredients\n  .map((item) => `- ${item.name}: ${item.quantity} ${UNIT_LABELS[item.unit] ?? item.unit} available`)\n  .join('\\n');\nconst dietRules = preferences.diets.map((diet) => `  - ${DIET_RULES[diet]}`).join('\\n');\nconst cooksRule = preferences.cooks > 1\n  ? `Split the work between the ${preferences.cooks} cooks so that every cook has their own tasks. Steps that different cooks do at the same time get \"parallel\": true.`\n  : 'There is only one cook: set \"cook\" to 1 and \"parallel\" to false for every step.';\n\nconst prompt = `Create exactly 3 recipes from the ingredients a home cook already has.\n\nAvailable ingredients:\n${ingredientList}\n\nPreferences:\n- Portions: ${preferences.portions}\n- People cooking together: ${preferences.cooks}\n- Time frame: ${time.text}\n- Cuisine: ${CUISINES[preferences.cuisine]}\n- Diet:\n${dietRules}\n\nRules:\n1. The 3 recipes must have different titles and clearly differ in cooking method (for example pan, oven, raw, soup) or flavour profile.\n2. Each recipe uses at least ${minUsed} of the ${names.length} available ingredients; list the ones it uses in \"usedIngredients\", spelled exactly as above. Leave out an available ingredient only if it breaks the diet rules.\n3. Each recipe may add at most 3 extra basic ingredients (for example salt, pepper, oil, water or a common spice). List them in \"extraIngredients\" and also in \"ingredients\".\n4. Scale all quantities in \"ingredients\" for exactly ${preferences.portions} portion(s) and never use more than the available amount. Format: \"<quantity> <unit> <name>\", for example \"200 g pasta\".\n5. \"estimatedMinutes\" is between ${time.min} and ${time.max}.\n6. Use spices, techniques and dishes that are typical for the cuisine.\n7. Steps are chronological, easy to follow for beginners and 4 to 12 per recipe. Every step has a short \"title\" (2-6 words), a clear \"instruction\", \"cook\" (1 to ${preferences.cooks}) and \"durationMinutes\".\n8. ${cooksRule}\n9. Use waiting times (boiling, baking, resting) for other preparations and say so in the instruction.\n10. \"nutrition\" contains realistic estimates in kcal and grams: \"perPortion\" for one portion and \"total\" for the whole recipe, which is perPortion times ${preferences.portions}.`;\n\n// JSON schema of the answer. The limits come from the request, so the parser enforces them per call.\nconst macros = (maxCarbs) => ({\n  type: 'object',\n  properties: {\n    calories: { type: 'number', minimum: 0 },\n    protein: { type: 'number', minimum: 0 },\n    carbs: maxCarbs ? { type: 'number', minimum: 0, maximum: maxCarbs } : { type: 'number', minimum: 0 },\n    fat: { type: 'number', minimum: 0 },\n  },\n  required: ['calories', 'protein', 'carbs', 'fat'],\n});\nconst recipeSchema = {\n  type: 'object',\n  properties: {\n    recipes: {\n      type: 'array',\n      minItems: 3,\n      maxItems: 3,\n      items: {\n        type: 'object',\n        properties: {\n          title: { type: 'string', minLength: 3 },\n          description: { type: 'string' },\n          estimatedMinutes: { type: 'integer', minimum: time.min, maximum: time.max },\n          usedIngredients: { type: 'array', items: { type: 'string', enum: names }, minItems: minUsed, uniqueItems: true },\n          ingredients: { type: 'array', items: { type: 'string' }, minItems: minUsed },\n          extraIngredients: { type: 'array', items: { type: 'string' }, maxItems: 3 },\n          steps: {\n            type: 'array',\n            minItems: 4,\n            maxItems: 12,\n            items: {\n              type: 'object',\n              properties: {\n                title: { type: 'string' },\n                instruction: { type: 'string' },\n                cook: { type: 'integer', minimum: 1, maximum: preferences.cooks },\n                parallel: { type: 'boolean' },\n                durationMinutes: { type: 'number', minimum: 0 },\n              },\n              required: ['title', 'instruction', 'cook', 'parallel', 'durationMinutes'],\n            },\n          },\n          nutrition: {\n            type: 'object',\n            properties: {\n              perPortion: macros(preferences.diets.includes('keto') ? 20 : null),\n              total: macros(null),\n            },\n            required: ['perPortion', 'total'],\n          },\n        },\n        required: ['title', 'description', 'estimatedMinutes', 'usedIngredients', 'ingredients', 'extraIngredients', 'steps', 'nutrition'],\n      },\n    },\n  },\n  required: ['recipes'],\n};\n\nreturn [{ json: { ...$json, prompt, recipeSchema: JSON.stringify(recipeSchema), ingredientCount: names.length } }];\n"
       },
       "id": "a8221e5e-220c-4c4c-9211-8f37c665b5a9",
       "name": "Prepare Prompt",
@@ -145,7 +145,7 @@
         1200,
         300
       ],
-      "notes": "Builds the prompt: 70% ingredient usage, max 3 extras, quantities scaled to the portions, cuisine and diet rules, tasks per cook, parallel steps, nutrition and the exact JSON answer format. Adds the rejection reasons on a retry.",
+      "notes": "Builds the prompt and the JSON schema with this request's limits (3 recipes, >= 70 % of the ingredients in usedIngredients, max 3 extras, time frame, cooks, keto carbs).",
       "notesInFlow": true,
       "onError": "continueErrorOutput"
     },
@@ -172,7 +172,7 @@
         300
       ],
       "onError": "continueErrorOutput",
-      "notes": "Sends the prompt to the chat model. The Structured Output Parser appends the JSON schema and parses the answer. A failed call or an unparsable answer is retried once; after that the error output goes to the error log.",
+      "notes": "Sends the prompt to the chat model; the Structured Output Parser checks the answer against the schema. A failed call is retried once, then the error output goes to the error log.",
       "notesInFlow": true,
       "retryOnFail": true,
       "maxTries": 2,
@@ -206,7 +206,8 @@
     {
       "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\"type\":\"object\",\"properties\":{\"recipes\":{\"type\":\"array\",\"minItems\":3,\"maxItems\":3,\"items\":{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"estimatedMinutes\":{\"type\":\"number\"},\"ingredients\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"extraIngredients\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"steps\":{\"type\":\"array\",\"minItems\":4,\"maxItems\":12,\"items\":{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"instruction\":{\"type\":\"string\"},\"cook\":{\"type\":\"integer\"},\"parallel\":{\"type\":\"boolean\"},\"durationMinutes\":{\"type\":\"number\"}},\"required\":[\"title\",\"instruction\",\"cook\",\"parallel\",\"durationMinutes\"]}},\"nutrition\":{\"type\":\"object\",\"properties\":{\"perPortion\":{\"type\":\"object\",\"properties\":{\"calories\":{\"type\":\"number\"},\"protein\":{\"type\":\"number\"},\"carbs\":{\"type\":\"number\"},\"fat\":{\"type\":\"number\"}},\"required\":[\"calories\",\"protein\",\"carbs\",\"fat\"]},\"total\":{\"type\":\"object\",\"properties\":{\"calories\":{\"type\":\"number\"},\"protein\":{\"type\":\"number\"},\"carbs\":{\"type\":\"number\"},\"fat\":{\"type\":\"number\"}},\"required\":[\"calories\",\"protein\",\"carbs\",\"fat\"]}},\"required\":[\"perPortion\",\"total\"]}},\"required\":[\"title\",\"description\",\"estimatedMinutes\",\"ingredients\",\"extraIngredients\",\"steps\",\"nutrition\"]}}},\"required\":[\"recipes\"]}"
+        "inputSchema": "={{ $json.recipeSchema }}",
+        "autoFix": true
       },
       "id": "e69c740a-65fc-4208-87d9-69d591b1a7f6",
       "name": "Structured Output Parser",
@@ -216,67 +217,7 @@
         1620,
         560
       ],
-      "notes": "Forces the JSON schema: 3 recipes with ingredients, extra ingredients, steps per cook and nutrition. Auto-fix stays off, because its repair call re-prompts the model without the ingredients.",
-      "notesInFlow": true
-    },
-    {
-      "parameters": {
-        "jsCode": "// Checks the parsed AI answer against the recipe rules. The Structured Output Parser already\n// guarantees the JSON shape, so only the content rules are left here. Broken rules trigger one\n// retry with feedback; after the last attempt the recipes go out with the remaining warnings.\nconst MAX_ATTEMPTS = 2;\nconst MAX_EXTRAS = 3;\nconst TIME_FRAMES = { quick: [1, 20], medium: [20, 45], complex: [46, 600] };\nconst promptData = $('Prepare Prompt').last().json;\nconst quotaData = $('Check IP Quota').first().json;\nconst { ingredients: requested, preferences } = promptData.request;\nconst attempt = Number(promptData.attempt) || 1;\n\nconst normalize = (value) => String(value ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nconst escape = (value) => value.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n// Whole-word match with simple plurals: \"egg\" matches \"2 eggs\" but not \"eggplant\".\nconst wordPattern = (name) => new RegExp(`(^|[^a-z])${escape(normalize(name))}(s|es)?([^a-z]|$)`);\n\n\n// Words that break a diet; plant-based variants are allowed through the exceptions.\nconst MEAT = ['meat', 'chicken', 'beef', 'pork', 'bacon', 'ham', 'lamb', 'turkey', 'duck', 'veal', 'sausage', 'salami', 'fish', 'salmon', 'tuna', 'cod', 'shrimp', 'prawn', 'anchovy', 'gelatine', 'gelatin'];\nconst ANIMAL = [...MEAT, 'egg', 'milk', 'butter', 'cheese', 'cream', 'yogurt', 'yoghurt', 'honey', 'parmesan', 'mozzarella', 'quark'];\nconst PLANT_BASED = /(vegan|plant[- ]based|soy|oat|almond|coconut|rice|peanut|nut) (milk|butter|cream|cheese|yogh?urt)|tofu|tempeh|seitan/;\nconst dietBreaks = (line) => {\n  if (PLANT_BASED.test(line)) return null;\n  const banned = preferences.diets.includes('vegan') ? ANIMAL : preferences.diets.includes('vegetarian') ? MEAT : [];\n  return banned.find((word) => wordPattern(word).test(line)) ?? null;\n};\n\n// The same ingredient in two units (e.g. 200 g and 1 kg flour) counts once. Available ingredients\n// the diet forbids (eggs for a vegan) may not be used, so they do not count for the 70 % rule.\nconst requestedNames = [...new Set(requested.map((item) => normalize(item.name)))];\nconst allPatterns = requestedNames.map((name) => ({ name, pattern: wordPattern(name) }));\nconst requestedPatterns = allPatterns.filter(({ name }) => !dietBreaks(name));\nconst minUsed = Math.ceil(requestedPatterns.length * 0.7);\n\nconst answer = $json.output ?? $json;\nconst rawRecipes = Array.isArray(answer?.recipes) ? answer.recipes : [];\nconst issues = [];\n\nconst recipes = rawRecipes.map((raw, index) => {\n  const label = `Recipe ${index + 1}`;\n  const stepDetails = raw.steps.map((step) => ({\n    ...step,\n    cook: Math.min(preferences.cooks, Math.max(1, Math.round(step.cook) || 1)),\n    parallel: preferences.cooks > 1 && step.parallel === true,\n  }));\n\n  // At least 70 % of the available ingredients.\n  const lines = raw.ingredients.map(normalize);\n  const usedNames = requestedPatterns.filter(({ pattern }) => lines.some((line) => pattern.test(line)));\n  if (usedNames.length < minUsed) {\n    const missing = requestedPatterns.filter((item) => !usedNames.includes(item)).map((item) => item.name);\n    issues.push(`${label} uses ${usedNames.length} of the available ingredients, at least ${minUsed} are required (missing: ${missing.join(', ')}).`);\n  }\n\n  // At most 3 extra ingredients, counted from the ingredient lines, not only from the extra list.\n  const extraLines = lines.filter((line) => !allPatterns.some(({ pattern }) => pattern.test(line)));\n  const extraCount = Math.max(extraLines.length, raw.extraIngredients.length);\n  if (extraCount > MAX_EXTRAS) issues.push(`${label} adds ${extraCount} ingredients that were not available, at most ${MAX_EXTRAS} basic extras are allowed.`);\n\n  // Diet and time frame.\n  const broken = lines.map(dietBreaks).find(Boolean);\n  if (broken) issues.push(`${label} contains \"${broken}\", which breaks the ${preferences.diets.join(' / ')} diet.`);\n  if (preferences.diets.includes('keto') && Number(raw.nutrition?.perPortion?.carbs) > 20) {\n    issues.push(`${label} has ${raw.nutrition.perPortion.carbs} g carbohydrates per portion, keto allows at most 20 g.`);\n  }\n  const [minMinutes, maxMinutes] = TIME_FRAMES[preferences.cookingTime] ?? [1, 600];\n  if (raw.estimatedMinutes < minMinutes || raw.estimatedMinutes > maxMinutes) {\n    issues.push(`${label} takes ${raw.estimatedMinutes} minutes, the chosen time frame is ${minMinutes}-${maxMinutes} minutes.`);\n  }\n\n  // Nutrition for the whole recipe must be the per-portion values times the portions (15 % tolerance).\n  const perPortionKcal = Number(raw.nutrition?.perPortion?.calories);\n  const totalKcal = Number(raw.nutrition?.total?.calories);\n  if (perPortionKcal > 0 && totalKcal > 0) {\n    const expected = perPortionKcal * preferences.portions;\n    if (Math.abs(totalKcal - expected) > expected * 0.15) {\n      issues.push(`${label}: total calories (${totalKcal}) must be about ${preferences.portions} x ${perPortionKcal} kcal.`);\n    }\n  }\n\n  const idleCooks = Array.from({ length: preferences.cooks }, (_, i) => i + 1)\n    .filter((cook) => !stepDetails.some((step) => step.cook === cook));\n  if (idleCooks.length) issues.push(`${label}: cook ${idleCooks.join(' and ')} has no tasks.`);\n\n  return {\n    ...raw,\n    steps: stepDetails.map((step) => `${step.title}: ${step.instruction}`),\n    stepDetails,\n    ingredientCoverage: requestedPatterns.length ? Math.round((usedNames.length / requestedPatterns.length) * 100) : 100,\n  };\n});\n\nif (recipes.length !== 3) issues.push(`Expected exactly 3 recipes but got ${recipes.length}.`);\nconst titles = recipes.map((recipe) => normalize(recipe.title));\nif (new Set(titles).size !== titles.length) issues.push('The 3 recipes need different titles and must differ in method or flavour.');\n\nif (issues.length && attempt < MAX_ATTEMPTS) {\n  return [{ json: { ...promptData, attempt: attempt + 1, retry: true, retryFeedback: issues.join(' ') } }];\n}\n\nif (recipes.length !== 3) {\n  return [{\n    json: {\n      ...quotaData,\n      retry: false,\n      recipeError: true,\n      recipeErrorMessage: 'The AI could not create valid recipes. Please try again.',\n      recipeIssues: issues,\n      attempts: attempt,\n    },\n  }];\n}\n\nif (issues.length) console.log(`Recipes returned with warnings after ${attempt} attempts: ${issues.join(' ')}`);\n\nreturn [{\n  json: {\n    ...quotaData,\n    ingredients: requested,\n    preferences,\n    retry: false,\n    recipeError: false,\n    recipeErrorMessage: null,\n    recipeWarnings: issues,\n    attempts: attempt,\n    recipeResult: { recipes },\n  },\n}];\n"
-      },
-      "id": "80be5bb1-a57a-4cf0-81b3-2c55b03d8dfd",
-      "name": "Validate Recipe Result",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1680,
-        300
-      ],
-      "notes": "Checks 3 distinct recipes, >= 70 % of the ingredients, max 3 extras, diet, time frame, nutrition totals and a task for every cook. One retry with feedback.",
-      "notesInFlow": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.retry === true }}",
-              "value2": true
-            }
-          ]
-        }
-      },
-      "id": "ee3477b5-4ead-445e-a2c0-9bdee3d9dfe7",
-      "name": "Route on Retry",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        1920,
-        300
-      ],
-      "notes": "true: a rule was broken and an attempt is left, back to Prepare Prompt. false: continue.",
-      "notesInFlow": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.recipeError === true }}",
-              "value2": true
-            }
-          ]
-        }
-      },
-      "id": "a342a671-9802-400f-9bd6-53aa2bbe3fc8",
-      "name": "Route Recipe Errors",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        2160,
-        300
-      ],
-      "notes": "true: no valid recipes, log and answer with 500. false: return the recipes.",
+      "notes": "Validates the answer against the schema from Prepare Prompt ($json.recipeSchema). Auto-fix sends a broken answer back to the model with the parser error.",
       "notesInFlow": true
     },
     {
@@ -316,7 +257,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { request: { ingredients: $json.ingredients, preferences: $json.preferences }, requesterIp: $json.ipAddress, generatedAt: new Date().toISOString(), quota: $json.quota, warnings: $json.recipeWarnings, attempts: $json.attempts, result: $json.recipeResult } }}",
+        "responseBody": "={{ { request: { ingredients: $json.ingredients, preferences: $json.preferences }, generatedAt: new Date().toISOString(), quota: $json.quota, result: $json.recipeResult } }}",
         "options": {
           "responseCode": 200
         }
@@ -350,7 +291,7 @@
     },
     {
       "parameters": {
-        "content": "## 2. AI generation\n**Prepare Prompt** -> **Generate Recipes** (LLM chain + Structured Output Parser, Ollama Cloud, one automatic retry on failure) -> **Validate Recipe Result**.\n\nContent rules (70 % of the ingredients, max 3 extras, diet, time frame, nutrition totals, every cook has tasks, distinct recipes) send the request back once with feedback (**Route on Retry**). The JSON shape itself (3 recipes, 4-12 steps, nutrition fields) is enforced by the parser.",
+        "content": "## 2. AI generation\n**Prepare Prompt** builds the prompt and a JSON schema with the recipe rules of this request. **Generate Recipes** (LLM chain, Ollama Cloud) returns the answer through the **Structured Output Parser**, which enforces the schema and auto-fixes a broken answer with the same model. **Shape Recipes** only formats the result.",
         "height": 760,
         "width": 760,
         "color": 4
@@ -379,6 +320,22 @@
         1900,
         -40
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The Structured Output Parser has already checked every rule of the schema, so this node only\n// prepares the answer for the app: step texts, per-cook step details and the ingredient coverage.\nconst { request, ingredientCount, quota, ipAddress } = $('Prepare Prompt').first().json;\nconst { preferences } = request;\n\nconst recipes = $json.output.recipes.map((recipe) => {\n  const stepDetails = recipe.steps.map((step) => ({ ...step, parallel: preferences.cooks > 1 && step.parallel }));\n  return {\n    ...recipe,\n    steps: stepDetails.map((step) => `${step.title}: ${step.instruction}`),\n    stepDetails,\n    ingredientCoverage: Math.round((recipe.usedIngredients.length / ingredientCount) * 100),\n  };\n});\n\nreturn [{ json: { ...request, ipAddress, quota, recipeResult: { recipes } } }];\n"
+      },
+      "id": "3ae04ae5-91ae-4f7d-b9fe-dad537c88fec",
+      "name": "Shape Recipes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        300
+      ],
+      "notes": "Only formats the checked recipes for the app: step texts, per-cook step details, ingredient coverage.",
+      "notesInFlow": true,
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -488,7 +445,7 @@
       "main": [
         [
           {
-            "node": "Validate Recipe Result",
+            "node": "Shape Recipes",
             "type": "main",
             "index": 0
           }
@@ -496,60 +453,6 @@
         [
           {
             "node": "Log Recipe Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Validate Recipe Result": {
-      "main": [
-        [
-          {
-            "node": "Route on Retry",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log Recipe Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Route on Retry": {
-      "main": [
-        [
-          {
-            "node": "Prepare Prompt",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Route Recipe Errors",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Route Recipe Errors": {
-      "main": [
-        [
-          {
-            "node": "Log Recipe Error",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Return Recipes",
             "type": "main",
             "index": 0
           }
@@ -574,6 +477,11 @@
             "node": "Generate Recipes",
             "type": "ai_languageModel",
             "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
           }
         ]
       ]
@@ -588,13 +496,32 @@
           }
         ]
       ]
+    },
+    "Shape Recipes": {
+      "main": [
+        [
+          {
+            "node": "Return Recipes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Recipe Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "errorWorkflow": "sabuomgSfJ7hGBJF"
   },
   "nodeGroups": [],
   "tags": []
