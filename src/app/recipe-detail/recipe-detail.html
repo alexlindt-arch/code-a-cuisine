@@ -243,11 +243,17 @@
         <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'Generate a recipe'"
           [targetPath]="'/generate-recipe'"
           [imageArrow]="'assets/icons/Arrow-right-dark.png'"></app-routerlink-componente>
-      </nav> } @else {
+      </nav>
+      } @else if (isLoadingRecipe()) {
+      <article class="panel empty-state" aria-busy="true">
+        <h1>Loading recipe ...</h1>
+        <p role="status">The recipe is being loaded from the cookbook.</p>
+      </article>
+      } @else {
       <article class="panel empty-state">
         <h1>Recipe not found</h1>
-        <p>Select a recipe from the results list first.</p>
-        <a [routerLink]="'/results'" class="back-button">Back to results</a>
+        <p>This recipe could not be found. Pick another one from the list.</p>
+        <a [routerLink]="backLink()" class="back-button">{{ backLinkLabel() }}</a>
       </article>
       }
     </div>

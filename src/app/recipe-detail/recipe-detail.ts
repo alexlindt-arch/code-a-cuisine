@@ -82,6 +82,8 @@ export class RecipeDetail {
   readonly requestPayload = signal<RecipeRequestPayload | null>(null);
   readonly selectedRecipe = signal<Recipe | null>(null);
   readonly selectedRecipeId = signal<string | null>(null);
+  /** True while a cookbook recipe is fetched, so the page shows a loading note instead of "not found". */
+  readonly isLoadingRecipe = signal(false);
   readonly savedRecipeIds = signal<string[]>([]);
   readonly likedRecipeIds = signal<string[]>([]);
   readonly likeCount = signal<number | null>(null);
@@ -397,6 +399,7 @@ export class RecipeDetail {
     this.selectedRecipeId.set(recipeId);
     this.likeCount.set(null);
     this.likeState.set('idle');
+    this.isLoadingRecipe.set(true);
 
     try {
       const recipe = await this.recipeLibraryService.getRecipeById(recipeId);
@@ -410,6 +413,8 @@ export class RecipeDetail {
     } catch (error) {
       console.error('Failed to load cookbook recipe details:', error);
       this.selectedRecipe.set(null);
+    } finally {
+      this.isLoadingRecipe.set(false);
     }
   }
 

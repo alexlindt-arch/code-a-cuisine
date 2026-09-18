@@ -12,6 +12,12 @@ import { RecipeLibraryService, type CookbookRecipeRecord } from '../recipe-libra
 /** Number of recipes shown per page. */
 export const RECIPES_PER_PAGE = 20;
 
+/**
+ * Last page shown per category slug during this visit, so coming back from a recipe detail
+ * lands on the same page instead of page 1.
+ */
+const lastPageByCategory = new Map<string, number>();
+
 @Component({
   selector: 'app-cookbook-category',
   imports: [RouterLink, RouterlinkComponente],
@@ -69,7 +75,7 @@ export class CookbookCategoryPage {
    * Zero-based index of the first recipe on the current page.
    * @returns The start index.
    */
-  readonly pageStartIndex = computed(() => (this.currentPage() - 1) * this.pageSize);
+  readonly pageStartIndex = computed(() => (Math.min(this.currentPage(), this.totalPages()) - 1) * this.pageSize);
 
   /**
    * Recipes shown on the current page.
@@ -117,8 +123,9 @@ export class CookbookCategoryPage {
     void this.loadRecipes();
 
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      this.selectedCategory.set(findCookbookCategory(params.get('category')));
-      this.currentPage.set(1);
+      const category = findCookbookCategory(params.get('category'));
+      this.selectedCategory.set(category);
+      this.currentPage.set((category && lastPageByCategory.get(category.slug)) || 1);
     });
   }
 
@@ -142,6 +149,10 @@ export class CookbookCategoryPage {
       return;
     }
     this.currentPage.set(nextPage);
+    const category = this.selectedCategory();
+    if (category) {
+      lastPageByCategory.set(category.slug, nextPage);
+    }
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
