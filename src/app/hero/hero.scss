@@ -528,7 +528,8 @@
         justify-content: flex-start;
         gap: 16px;
         width: auto;
-        margin: auto 0 mixin.design-size(126);
+        // The imprint below needs its own row even in very short windows.
+        margin: auto 0 max(#{mixin.design-size(126)}, calc(#{mixin.design-size(40)} + 44px));
 
         & > p {
           width: auto;
@@ -859,10 +860,10 @@
   align-items: center;
   min-height: 44px;
   font-family: 'Quicksand', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  opacity: 0.75;
+  opacity: 0.9;
   transition: opacity 0.2s ease;
 
   &:hover,
