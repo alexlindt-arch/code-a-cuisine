@@ -616,13 +616,13 @@
       }
 
       // Windows narrower than the 1440:1024 frame (e.g. 1024x1000) would leave the bottom
-      // of the column empty, so the stack continues with the same spacing. In the design
-      // proportions these two lie below the fold.
+      // of the column empty, so the stack continues. Plate 4 starts right at the bottom
+      // edge of the design frame, so in the design proportions it stays out of sight.
       app-images-component:nth-child(4) {
         display: block;
         opacity: 1;
         visibility: visible;
-        top: mixin.design-size(995);
+        top: mixin.design-size(1066);
         left: mixin.design-size(5);
         width: mixin.design-size(470);
         margin-top: 0;
@@ -632,7 +632,7 @@
         display: block;
         opacity: 1;
         visibility: visible;
-        top: mixin.design-size(1335);
+        top: mixin.design-size(1406);
         left: mixin.design-size(-8);
         width: mixin.design-size(484);
         margin-top: 0;
