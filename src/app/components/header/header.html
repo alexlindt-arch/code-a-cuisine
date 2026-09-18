@@ -1,7 +1,8 @@
 <header [class.header-light]="isLightHeader() || isLoading()">
   <div class="header-content">
-    <div class="logo">
-      <a [routerLink]="'/'"><img [src]="logoSrc()" alt="Code à Cuisine – go to home page" /></a>
-    </div>
+    <a class="logo" [class.logo--dark]="isDarkLogo()" [routerLink]="'/'" aria-label="Code à Cuisine – go to home page">
+      <span class="logo-mark" aria-hidden="true"></span>
+      <span class="logo-text" aria-hidden="true">Code à<br>Cuisine</span>
+    </a>
   </div>
 </header>

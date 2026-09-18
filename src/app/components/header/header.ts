@@ -28,16 +28,10 @@ export class Header {
   readonly isLoading = this.loadingStateService.isLoading;
 
   /**
-   * Logo matching the header background.
-   * @returns The light logo while loading or on dark headers, otherwise the dark logo.
+   * Whether the logo uses its dark colours (green on white pages).
+   * @returns False while loading or on dark headers, where the light logo sits on green.
    */
-  readonly logoSrc = computed(() => {
-    if (this.isLoading()) {
-      return 'assets/img/logo-light.png';
-    }
-
-    return this.isLightHeader() ? 'assets/img/logo-dark.png' : 'assets/img/logo-light.png';
-  });
+  readonly isDarkLogo = computed(() => this.isLightHeader() && !this.isLoading());
 
   /**
    * Updates the header style on every completed navigation.

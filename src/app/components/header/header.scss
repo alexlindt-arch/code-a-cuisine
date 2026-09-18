@@ -1,6 +1,48 @@
 @use '../../../scss/components/variablen' as var;
 @use '../../../scss/components/header' as hed;
+@use '../../../scss/abstract/mixings' as mixin;
 
-.logo:hover {
+// The logo is drawn instead of loaded as a 142x48 PNG: the chef hat comes from the 512px app
+// icon used as a mask, the name is live text, so both stay sharp on high-density screens.
+.logo {
+  --logo-mark-color: #{var.$primary-text-color};
+  --logo-text-color: #{var.$primary-text-color};
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  text-decoration: none;
   cursor: pointer;
+  touch-action: manipulation;
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+// On white pages: green hat and dark green name, like the former dark logo.
+.logo--dark {
+  --logo-mark-color: #{var.$primary-bg};
+  --logo-text-color: #10310b;
+}
+
+.logo-mark {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  background-color: var(--logo-mark-color);
+  -webkit-mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
+  mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
+}
+
+.logo-text {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 0.86;
+  letter-spacing: -0.015em;
+  color: var(--logo-text-color);
+  white-space: nowrap;
 }
