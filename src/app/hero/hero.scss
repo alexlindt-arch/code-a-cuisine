@@ -626,6 +626,8 @@
   .home {
     // Same side margin as the logo in the header: 16px on phones, 40px from 660px on.
     --hero-gutter: 16px;
+    // Visible width of the plate column, see .content-right.
+    --plates-visible: clamp(#{mixin.mobile-size(129)}, calc(129px + (100vw - 375px) * 0.7), 340px);
 
     @media only screen and (min-width: 660px) {
       --hero-gutter: 40px;
@@ -721,7 +723,6 @@
     // wider screens reveal more of them until the whole plates are visible (from ~680px),
     // after that the column stays put. The 8px extra on the left keep the drop shadows.
     .content-right {
-      --plates-visible: clamp(#{mixin.mobile-size(129)}, calc(129px + (100vw - 375px) * 0.7), 340px);
       display: block;
       position: absolute;
       top: calc(#{mixin.mobile-size(23)} - 100px);
@@ -794,4 +795,29 @@
       }
     }
   }
+}
+
+// From 700px on the texts may run on one line as far as the room left of the plates
+// allows; a line only breaks where it would otherwise reach into the plate column.
+@include mixin.compact {
+  @media only screen and (min-width: 700px) {
+    .home-content .content-left {
+      --text-room: calc(100vw - var(--hero-gutter) - var(--plates-visible) - 24px);
+
+      .top-content > p,
+      .top-content > h1 {
+        width: auto;
+        max-width: var(--text-room);
+      }
+
+      .bottom-section > p {
+        max-width: calc(var(--text-room) - 16px);
+      }
+    }
+  }
+}
+
+// "recipe generator" wraps as one unit, never as "AI-Powered recipe / generator".
+.keep-together {
+  white-space: nowrap;
 }
