@@ -153,6 +153,9 @@ export function isStoredRecipeContext(value: unknown): value is StoredRecipeCont
     && context.ingredients.every(isValidIngredient);
 }
 
+/** localStorage key of the recipe context (ingredient list and preferences). */
+export const RECIPE_CONTEXT_STORAGE_KEY = 'cac-ingredients';
+
 /**
  * Reads the recipe context from localStorage, accepting the legacy plain-array format.
  * Units are normalized to the ids the server accepts.

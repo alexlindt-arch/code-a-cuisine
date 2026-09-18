@@ -5,6 +5,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, ActivatedRoute } from '@angular/router';
 import { Header } from './components/header/header';
+import { clearStoredIngredients, RECIPE_CONTEXT_STORAGE_KEY } from './generate-recipe/generate-recipe.utils';
 
 @Component({
   selector: 'app-root',
@@ -20,9 +21,12 @@ export class App {
   private activatedRoute = inject(ActivatedRoute);
 
   /**
-   * Subscribes to the route data and updates the title when a route provides one.
+   * Starts every page load with an empty ingredient list and keeps the title in sync with
+   * the route data. The list only survives navigation inside the app (generate recipe ->
+   * preferences), not a reload.
    */
   constructor() {
+    clearStoredIngredients(RECIPE_CONTEXT_STORAGE_KEY);
     this.activatedRoute.data.subscribe((data) => {
       if (data['title']) {
         this.title.set(data['title']);
