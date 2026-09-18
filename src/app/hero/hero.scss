@@ -256,7 +256,7 @@
 
     @include mixin.tablet {
       position: fixed;
-      top: 169px;
+      top: 0;
       right: 0px;
       transform: translate(50%, 0%);
     }
@@ -264,7 +264,7 @@
     @include mixin.smartphone {
       position: fixed;
       width: 100%;
-      top: 169px;
+      top: 0;
       right: -110px;
       transform: translate(50%, 0%);
     }
