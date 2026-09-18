@@ -4,7 +4,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import type { QuotaStatus, RecipeRequestPayload } from './preferences.models';
 
@@ -19,6 +19,15 @@ export interface ApiErrorDetails {
   errors: string[];
   quota: QuotaStatus | null;
 }
+
+/**
+ * Longest wait for an answer: the workflow allows two AI attempts of up to 120s each, so a
+ * request still pending after three minutes is treated as failed instead of spinning forever.
+ */
+const REQUEST_TIMEOUT_MS = 180_000;
+
+/** Message shown when the webhook did not answer within REQUEST_TIMEOUT_MS. */
+export const TIMEOUT_ERROR_MESSAGE = 'Generating your recipes took too long. Please try again.';
 
 /** Fallback text when the webhook cannot be reached at all. */
 export const CONNECTION_ERROR_MESSAGE = 'The recipe API is currently unavailable. Please try again in a few minutes.';
@@ -51,7 +60,7 @@ export class RecipeRequestService {
     let lastError: unknown = null;
     for (const url of urls) {
       try {
-        return await firstValueFrom(this.http.post(url, payload));
+        return await firstValueFrom(this.http.post(url, payload).pipe(timeout(REQUEST_TIMEOUT_MS)));
       } catch (error) {
         lastError = error;
         console.warn(`Webhook request failed for ${url}:`, error);
@@ -88,6 +97,9 @@ export class RecipeRequestService {
    * @returns The server message or a fallback for network and unknown errors.
    */
   toErrorMessage(error: unknown): string {
+    if (error instanceof TimeoutError) {
+      return TIMEOUT_ERROR_MESSAGE;
+    }
     const details = this.readApiError(error);
     if (details.message) {
       return details.message;
@@ -110,6 +122,9 @@ export class RecipeRequestService {
    * @returns The dialog kind.
    */
   getDialogKind(error: unknown): RequestDialogKind {
+    if (error instanceof TimeoutError) {
+      return 'failed';
+    }
     const details = this.readApiError(error);
     switch (details.code) {
       case 'QUOTA_EXCEEDED':

@@ -10,7 +10,7 @@
         <img [src]="kohlIcon2" alt="" />
         <img [src]="rettichIcon3" alt="" />
       </div>
-      <p>Generating ...</p>
+      <h1 id="preferences-title" class="loading-title">Generating ...</h1>
     </div>
   </div>
   } @else {
@@ -121,9 +121,8 @@
     </form>
 
     @if (showQuotaDialog()) {
-    <div class="quota-dialog-backdrop" (click)="closeQuotaDialog()"></div>
-    <dialog class="quota-dialog" open aria-modal="true" aria-labelledby="quota-dialog-title"
-      aria-describedby="quota-dialog-message">
+    <dialog #quotaDialog class="quota-dialog" aria-labelledby="quota-dialog-title"
+      aria-describedby="quota-dialog-message" (cancel)="closeQuotaDialog()" (click)="onDialogClick($event)">
       <button class="quota-dialog-close" type="button" aria-label="Close dialog" (click)="closeQuotaDialog()"
         autofocus>×</button>
       <h2 id="quota-dialog-title">{{ quotaDialogTitle() }}</h2>
@@ -139,6 +138,11 @@
       <p class="quota-reset-hint quota-reset-hint--dialog">{{ hint }}</p>
       }
       <div class="dialog-button-content">
+        @if (canRetry()) {
+        <button type="button" class="btn --generate-btn quota-dialog-btn quota-dialog-retry" (click)="retryGeneration()">
+          Try again
+        </button>
+        }
         <a (click)="closeQuotaDialog()" [routerLink]="'/generate-recipe'"
           class="btn --generate-btn quota-dialog-btn router-link"><app-images-component [class]="arrowClass"
             [src]="heroImageArrowLight" label=""></app-images-component>Go back to ingredients</a>

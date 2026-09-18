@@ -498,7 +498,7 @@
           width: auto;
           margin: 0;
           font-family: 'Quicksand', sans-serif;
-          font-size: mixin.design-size(48);
+          font-size: max(16px, #{mixin.design-size(48)});
           font-weight: 600;
           line-height: 1.25;
           color: #F5F5DC;
@@ -691,7 +691,7 @@
           margin: 0;
           padding: 0;
           font-family: 'Quicksand', sans-serif;
-          font-size: mixin.mobile-size(24);
+          font-size: max(16px, #{mixin.mobile-size(24)});
           font-weight: 600;
           line-height: 1.25;
           color: #F5F5DC;
@@ -729,7 +729,7 @@
           padding-left: 16px;
           box-sizing: content-box;
           font-family: 'Ubuntu', sans-serif;
-          font-size: mixin.mobile-size(24);
+          font-size: max(16px, #{mixin.mobile-size(24)});
           font-weight: 500;
           line-height: 1.2;
         }

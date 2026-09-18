@@ -23,9 +23,21 @@ p {
   line-height: 1.5;
 }
 
+h2 {
+  margin: var.$spacing-large 0 var.$spacing-small;
+  font-size: var.$font-size-xl;
+  color: var.$secondary-text-color;
+}
+
+p + p {
+  margin-top: var.$spacing-small;
+}
+
+// Links in running text stay recognisable without relying on colour alone.
 a {
   color: var.$secondary-text-color;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .impressum-content {

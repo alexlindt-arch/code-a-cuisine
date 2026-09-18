@@ -14,7 +14,7 @@
         <div class="recipe-hero-card">
           <header class="hero-main">
             <p class="meta-line"><img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{
-              recipe.estimatedMinutes }}min</p>
+              recipe.estimatedMinutes }} min</p>
             <h1 id="recipe-title">{{ recipe.title }}</h1>
             @if (requestPayload(); as request) {
             <p class="cook-count">Cooking person: {{ request.preferences.cooks }}
@@ -22,7 +22,7 @@
               <span class="chef-badge"><img [src]="getCookIcon(chef)" [alt]="'Cook ' + chef"></span>
               }
             </p>
-            <ul class="cook-icons" [attr.aria-label]="request.preferences.cooks + ' cooking persons'">
+            <ul class="cook-icons" aria-hidden="true">
               @for (chef of cookIconIndexes(); track chef) {
               <li><img class="--mobil" [src]="getCookIcon(chef)" [alt]="'Cook ' + chef"></li>
               }
@@ -35,6 +35,7 @@
             <ul class="meta-tags" aria-label="Recipe facts">
               <li class="tag">{{ request.preferences.cuisine }}</li>
               <li class="tag">{{ request.preferences.cookingTime }}</li>
+              <li class="tag">{{ request.preferences.portions }} {{ request.preferences.portions === 1 ? 'portion' : 'portions' }}</li>
               <li class="tag"><img src="assets/icons/heart.png" alt="Likes:"> {{ displayedLikes() }}</li>
             </ul>
             }

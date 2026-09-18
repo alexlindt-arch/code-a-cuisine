@@ -42,17 +42,17 @@
                   recipe.estimatedMinutes }} min</p>
                 <div class="recipe-entry-wrapper">
                   <div class="recipe-entry-title">
-                    <span class="recipe-index">{{ pageStartIndex() + i + 1 }}.</span>
+                    <span class="recipe-index" aria-hidden="true">{{ pageStartIndex() + i + 1 }}.</span>
                     <h2>{{ recipe.title }}</h2>
 
-                    <div class="recipe-entry-tags">
-                      <span class="tag">{{ formatCuisine(recipe.cuisine) }}</span>
+                    <ul class="recipe-entry-tags" aria-label="Recipe facts">
+                      <li class="tag">{{ formatCuisine(recipe.cuisine) }}</li>
                       @if (recipe.dietLabel) {
-                      <span class="tag">{{ recipe.dietLabel }}</span>
+                      <li class="tag">{{ recipe.dietLabel }}</li>
                       }
-                      <span class="tag">{{ recipe.difficulty }}</span>
-                      <span class="tag like-tag"><img src="assets/icons/heart.png" alt="Likes:"> {{ recipe.likes }}</span>
-                    </div>
+                      <li class="tag">{{ recipe.difficulty }}</li>
+                      <li class="tag like-tag"><img src="assets/icons/heart.png" alt="Likes:"> {{ recipe.likes }}</li>
+                    </ul>
                   </div>
                 </div>
               </div>

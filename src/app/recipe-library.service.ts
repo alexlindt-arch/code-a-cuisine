@@ -298,7 +298,7 @@ export class RecipeLibraryService {
       return 'Quick';
     }
 
-    if (minutes <= 40) {
+    if (minutes <= 45) {
       return 'Medium';
     }
 
@@ -431,7 +431,7 @@ export class RecipeLibraryService {
       return 'Quick';
     }
 
-    if (estimatedMinutes <= 40) {
+    if (estimatedMinutes <= 45) {
       return 'Medium';
     }
 

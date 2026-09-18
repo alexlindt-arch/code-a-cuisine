@@ -18,6 +18,11 @@
   }
 
   &.--primary {
+    // Rendered as a link: keep the button look.
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     background-color: var.$btn-bg;
     color: var.$btn-text-color;
     font-family: var.$font-family;

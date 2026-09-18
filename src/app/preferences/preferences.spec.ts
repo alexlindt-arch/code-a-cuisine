@@ -66,7 +66,7 @@ describe('Preferences', () => {
     expect(component.cookingTimeOptions.map((option) => option.hint)).toEqual(['up to 20 min', '20–45 min', 'over 45 min']);
   });
 
-  it('should reset other diets when "No preferences" is selected', () => {
+  it('should reset other diets when "No restrictions" is selected', () => {
     component.toggleDiet('vegan');
     component.toggleDiet('keto');
     expect(component.selectedDiets()).toEqual(['vegan', 'keto']);

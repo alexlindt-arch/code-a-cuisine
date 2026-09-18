@@ -2,7 +2,7 @@
  * @file preferences.ts
  * @description Preferences step: portions, cooks, cooking time, cuisine and diets, quota display and recipe request.
  */
-import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ImagesComponent } from '../components/images-component/images-component';
 import { LoadingStateService } from '../loading-state.service';
@@ -83,14 +83,14 @@ export class Preferences implements OnDestroy {
     { id: 'italian', label: 'Italian' },
     { id: 'indian', label: 'Indian' },
     { id: 'japanese', label: 'Japanese' },
-    { id: 'gourmet', label: 'Gourmet' },
+    { id: 'gourmet', label: 'Gourmet / Fine Dining' },
     { id: 'fusion', label: 'Fusion' },
   ];
   readonly dietOptions: Option<DietId>[] = [
     { id: 'vegetarian', label: 'Vegetarian' },
     { id: 'vegan', label: 'Vegan' },
     { id: 'keto', label: 'Keto' },
-    { id: 'none', label: 'No preferences' },
+    { id: 'none', label: 'No restrictions' },
   ];
 
   /**
@@ -162,6 +162,15 @@ export class Preferences implements OnDestroy {
     return minutes > 0 ? `Reset in ${Math.floor(minutes / 60)}h ${minutes % 60}m.` : null;
   });
 
+  /**
+   * Whether the dialog offers "Try again": for failed generations and lost connections,
+   * not for limits or invalid input, which the same request would hit again.
+   * @returns True when a retry makes sense.
+   */
+  readonly canRetry = computed(() => ['failed', 'connection', 'notice'].includes(this.quotaDialogKind()));
+
+  private readonly quotaDialog = viewChild<ElementRef<HTMLDialogElement>>('quotaDialog');
+
   prefBlockIconClock = 'assets/icons/clock_Icon.png';
   prefBlockIconCuisine = 'assets/icons/word_Icon.png';
   prefBlockIconDiet = 'assets/icons/fork_spoon.png';
@@ -181,6 +190,25 @@ export class Preferences implements OnDestroy {
   constructor() {
     this.quota.initialize();
     void this.initializeIp();
+    this.openDialogAsModal();
+  }
+
+  /**
+   * Opens the dialog with showModal() once it is rendered, so focus stays inside it and the
+   * page behind is inert. Environments without showModal (tests) fall back to the open attribute.
+   */
+  private openDialogAsModal(): void {
+    effect(() => {
+      const dialog = this.quotaDialog()?.nativeElement;
+      if (!dialog || dialog.open) {
+        return;
+      }
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute('open', '');
+      }
+    });
   }
 
   /**
@@ -244,7 +272,7 @@ export class Preferences implements OnDestroy {
   }
 
   /**
-   * Toggles a diet; "No preferences" clears all other diets and is restored when nothing is selected.
+   * Toggles a diet; "No restrictions" clears all other diets and is restored when nothing is selected.
    * @param id - Diet id.
    */
   toggleDiet(id: DietId): void {
@@ -265,6 +293,32 @@ export class Preferences implements OnDestroy {
    */
   closeQuotaDialog(): void {
     this.showQuotaDialog.set(false);
+  }
+
+  /**
+   * Closes the dialog when the click landed on the backdrop, i.e. outside the dialog box.
+   * @param event - Click on the dialog element or its backdrop.
+   */
+  onDialogClick(event: MouseEvent): void {
+    const dialog = event.currentTarget as HTMLDialogElement;
+    if (event.target !== dialog) {
+      return;
+    }
+    const box = dialog.getBoundingClientRect();
+    const isInside = event.clientX >= box.left && event.clientX <= box.right
+      && event.clientY >= box.top && event.clientY <= box.bottom;
+    if (!isInside) {
+      this.closeQuotaDialog();
+    }
+  }
+
+  /**
+   * Closes the error dialog and sends the same request again.
+   * @returns A promise that resolves when the new request has finished.
+   */
+  async retryGeneration(): Promise<void> {
+    this.closeQuotaDialog();
+    await this.generateRecipe();
   }
 
   /**

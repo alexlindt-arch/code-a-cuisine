@@ -2,17 +2,20 @@
  * @file button.ts
  * @description Primary call-to-action button of the landing page.
  */
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-button',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './button.html',
   styleUrls: ['./button.scss'],
 })
 /**
- * Call-to-action button with the label "Get started"; navigation comes from the routerLink on the host element.
+ * Call-to-action link styled as a button, with the label "Get started". It is a real link, so it
+ * has one tab stop and opens its target with Enter like any other link.
  */
 export class Button {
+  readonly link = input.required<string>();
   label = 'Get started';
 }

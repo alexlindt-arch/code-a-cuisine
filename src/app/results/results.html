@@ -7,7 +7,7 @@
         <div class="hero-content">
           <h1 id="results-title">The recipe results</h1>
           <figure class="hero-image-wrap --mobile">
-            <img [src]="getHeroImage()" alt="AI generated recipe visual" class="hero-image">
+            <img [src]="getHeroImage()" alt="" class="hero-image">
           </figure>
           <p class="results-copy">
             We took what you have and let our AI do the thinking.
@@ -33,7 +33,7 @@
           </div>
         </div>
         <figure class="hero-image-wrap">
-          <img [src]="getHeroImage()" alt="AI generated recipe visual" class="hero-image">
+          <img [src]="getHeroImage()" alt="" class="hero-image">
         </figure>
       </header>
 
@@ -45,11 +45,21 @@
             <h2 [id]="'recipe-card-title-' + i">{{ recipe.title }}</h2>
             <ul class="recipe-facts">
               <li class="recipe-time">
-                <img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{ recipe.estimatedMinutes }}min
+                <img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{ recipe.estimatedMinutes }} min
               </li>
               @if (cuisineLabel(); as cuisine) {
               <li class="recipe-cuisine">Cuisine: {{ cuisine }}</li>
               }
+              @if (requestPayload()?.preferences?.portions; as portions) {
+              <li class="recipe-cuisine">Portions: {{ portions }}</li>
+              }
+              <li class="recipe-extras">
+                @if (recipe.extraIngredients?.length) {
+                Also needed: {{ recipe.extraIngredients!.join(', ') }}
+                } @else {
+                Uses only your ingredients
+                }
+              </li>
             </ul>
             <a class="view-btn" [routerLink]="['/results', i]" [queryParams]="{ from: '/results' }"
               [attr.aria-label]="'View recipe: ' + recipe.title">View</a>
@@ -62,18 +72,17 @@
           [targetPath]="'/generate-recipe'"></app-routerlink-componente>
       </nav>
       } @else {
-      <section class="empty-state" aria-labelledby="results-title">
+      <div class="empty-state">
         <h1 id="results-title">No results yet</h1>
         @if (generationError(); as error) {
         <p>{{ error }}</p>
         } @else if (hasStoredResponse()) {
-        <p>A response from n8n was found, but no recipes could be parsed. Check your workflow response JSON structure.
-        </p>
+        <p>Something went wrong while reading your recipes. Please generate them again.</p>
         } @else {
-        <p>Generate a recipe first. The n8n workflow response will appear here.</p>
+        <p>Generate a recipe first. Your three recipe ideas will appear here.</p>
         }
         <a [routerLink]="'/preferences'" class="view-btn empty-link">Back to preferences</a>
-      </section>
+      </div>
       }
     </div>
   </div>

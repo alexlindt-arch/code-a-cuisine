@@ -3,7 +3,7 @@
 const n8nBaseUrl = 'https://alexlindt.app.n8n.cloud/';
 
 export const environment = {
-  production: true,
+  production: false,
   n8nBaseUrl,
   recipeWebhookUrl: `${n8nBaseUrl}webhook/`,
   firebaseDatabaseUrl: 'https://code-a-cuisine-7b803-default-rtdb.europe-west1.firebasedatabase.app',

@@ -1,0 +1,44 @@
+@use '../../../scss/components/variablen' as var;
+@use '../../../scss/abstract/mixings' as mixin;
+
+.page-footer {
+  width: 100%;
+  background-color: var.$primary-bg;
+  color: var.$primary-text-color;
+}
+
+.page-footer--light {
+  background-color: var.$secondary-bg;
+  color: var.$secondary-text-color;
+}
+
+// Same width and side margins as the header, so the link lines up with the logo.
+.page-footer-content {
+  @include mixin.max-width(var.$max-width);
+  width: 100%;
+  padding: 8px 40px 16px;
+
+  @include mixin.smartphone {
+    padding: 8px 16px 16px;
+  }
+}
+
+.page-footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: var.$font-size-md;
+  font-weight: var.$font-weight-medium;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.9;
+  touch-action: manipulation;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}

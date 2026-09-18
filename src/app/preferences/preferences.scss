@@ -16,6 +16,16 @@
   color: var.$primary-text-color;
   padding: 24px;
 
+  // The loading text is the page heading while the request runs; it keeps the look of the
+  // former paragraph.
+  .loading-title {
+    width: auto;
+    margin: 15px 0;
+    font-size: var.$font-size-sub-headline-md;
+    font-weight: var.$font-weight-small;
+    text-align: center;
+  }
+
   .loading-hero-image {
     filter: brightness(0) invert(1);
     opacity: 0.95;
@@ -712,11 +722,9 @@ legend {
   }
 }
 
-.quota-dialog-backdrop {
-  position: fixed;
-  inset: 0;
+// Backdrop of the modal error dialog (opened with showModal()).
+.quota-dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.55);
-  z-index: 500;
 }
 
 .quota-dialog {
@@ -812,5 +820,14 @@ legend {
     max-width: 100%;
     color: var.$primary-text-color;
     font-size: var.$font-size-lg;
+  }
+}
+
+// Visitors who asked their system for less motion get a still loading screen.
+@media (prefers-reduced-motion: reduce) {
+  .generate-loading,
+  .generate-loading * {
+    animation: none !important;
+    transition: none !important;
   }
 }

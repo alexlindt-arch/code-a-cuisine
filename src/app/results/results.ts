@@ -116,7 +116,8 @@ export class Results implements OnDestroy {
 
     try {
       const parsed = JSON.parse(raw) as unknown;
-      const recipes = parseRecipeArray(extractResult(parsed));
+      // The workflow always answers with exactly three recipes; never show more.
+      const recipes = parseRecipeArray(extractResult(parsed)).slice(0, 3);
       this.recipes.set(recipes);
       void this.persistRecipesIfNeeded(recipes);
     } catch (error) {
@@ -203,7 +204,7 @@ export class Results implements OnDestroy {
       return 'Quick';
     }
 
-    if (minutes <= 40) {
+    if (minutes <= 45) {
       return 'Medium';
     }
 
