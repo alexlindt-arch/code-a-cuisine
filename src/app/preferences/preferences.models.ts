@@ -88,6 +88,8 @@ export interface GeneratedRecipe {
   title: string;
   description: string;
   estimatedMinutes: number;
+  /** The available ingredients the recipe uses (at least 70 %, enforced by the workflow schema). */
+  usedIngredients: string[];
   ingredients: string[];
   extraIngredients: string[];
   steps: string[];
@@ -102,11 +104,8 @@ export interface RecipeGenerationSuccessResponse {
     ingredients: StoredIngredient[];
     preferences: RecipeRequestPayload['preferences'];
   };
-  requesterIp: string;
   generatedAt: string;
   quota: QuotaStatus;
-  warnings: string[];
-  attempts: number;
   result: {
     recipes: GeneratedRecipe[];
   };

@@ -2,7 +2,7 @@
 
 | File | Purpose |
 | --- | --- |
-| `code-a-cuisine-recipe-agent.json` | Recipe API for the Angular app: validation, IP quota, AI generation, result validation, responses |
+| `code-a-cuisine-recipe-agent.json` | Recipe API for the Angular app: validation, IP quota, AI generation with a schema-checked output parser, responses |
 | `code-a-cuisine-error-handler.json` | Error workflow: sends an email and logs to Firebase when the recipe workflow crashes |
 
 ## API contract
@@ -26,11 +26,13 @@
 }
 ```
 
+`clientIp` and `requestedAt` are sent by the app but ignored by the workflow: the IP is taken from the Cloudflare header, which the browser cannot forge.
+
 | Field | Rule |
 | --- | --- |
-| `ingredients` | 1–30 items, duplicates (same name and unit) are merged |
+| `ingredients` | 1–30 items; duplicates are merged, kg and liter are converted to g and ml first |
 | `name` | 1–60 letters, numbers, spaces, hyphens, apostrophes, parentheses |
-| `quantity` | number > 0 |
+| `quantity` | a JSON number > 0 (strings are rejected) |
 | `unit` | `gram`, `kg`, `ml`, `liter`, `piece` |
 | `portions` | whole number 1–12 |
 | `cooks` | whole number 1–3 |
@@ -42,9 +44,9 @@
 
 | Status | Body |
 | --- | --- |
-| 200 | `{ request, requesterIp, generatedAt, quota, warnings, attempts, result: { recipes } }` |
+| 200 | `{ request, generatedAt, quota, result: { recipes } }` |
 | 400 | `{ message, code: "INVALID_REQUEST", errors: string[] }` |
-| 429 | `{ message, code: "QUOTA_EXCEEDED" \| "GLOBAL_QUOTA_EXCEEDED" \| "THROTTLED" \| "IP_NOT_DETECTED", quota }` |
+| 429 | `{ message, code: "QUOTA_EXCEEDED" \| "GLOBAL_QUOTA_EXCEEDED" \| "THROTTLED" \| "IP_NOT_DETECTED" \| "QUOTA_UNAVAILABLE", quota }` |
 | 500 | `{ message, code: "RECIPE_GENERATION_FAILED", generatedAt }` |
 
 A recipe in `result.recipes` (always 3):
@@ -54,6 +56,7 @@ A recipe in `result.recipes` (always 3):
   "title": "Fresh Tomato Garlic Pasta",
   "description": "…",
   "estimatedMinutes": 20,
+  "usedIngredients": ["pasta", "tomato", "garlic"],
   "ingredients": ["200 g pasta", "250 g tomato", "10 g garlic", "1 tbsp olive oil"],
   "extraIngredients": ["1 tbsp olive oil"],
   "steps": ["Boil water: Bring salted water to a boil."],
@@ -71,16 +74,16 @@ A recipe in `result.recipes` (always 3):
 ## How the recipe workflow works
 
 1. **Validate Request** checks every field above before any quota is used (400 on errors).
-2. **Check IP Quota** reads the caller IP (IPv4 or IPv6) from the proxy headers and enforces
-   - 3 generations per IP per calendar day (Europe/Berlin); users behind one shared IP share them,
+2. **Check IP Quota** takes the caller IP from `cf-connecting-ip` (set by Cloudflare in front of n8n Cloud, so it cannot be forged; `x-real-ip` as fallback) and enforces
+   - 3 generations per IP per calendar day (Europe/Berlin); IPv6 is counted per /64 network, users behind one shared IP share the 3,
    - 12 generations per day for the whole app,
    - 15 seconds between two requests of the same IP (throttling as cost airbag).
 
-   Counters live in Firebase `quota/<date>/ips/<ip>` and `quota/<date>/global`; workflow static data is the fallback if Firebase is unreachable.
-3. **Prepare Prompt** tells the model to use at least 70 % of the ingredients, add at most 3 basic extras, scale quantities to the portions, respect time frame, cuisine and diet, give every cook their own tasks, mark parallel steps, use waiting times and estimate nutrition per portion and in total.
-4. **Generate Recipes** (Basic LLM Chain with Ollama Cloud `gemma4:31b`) generates the JSON. The **Structured Output Parser** appends the JSON schema to the prompt and parses the answer. Its auto-fix option stays off: the repair call re-prompts the model without the ingredients.
-5. **Validate Recipe Result** only checks what the schema cannot express: at least 70 % of the ingredients used, at most 3 extras, tasks for every cook and three different recipes. Broken rules send the answer back once with the reasons (**Route on Retry**); an unusable second answer becomes a 500.
-6. **Log Recipe Error** writes failures to the execution log and Firebase `logs/recipeErrors`.
+   Counters live in Firebase `quota/<date>/global` and `quota/<date>/ips/<hash>`: the IP is stored only as a SHA-256 hash. The database rules accept nothing but "+1" writes on these counters, so nobody can reset them, and a request that loses a race against a parallel one is rejected instead of passing twice. If Firebase cannot be read, the request is refused (fail closed).
+3. **Prepare Prompt** writes the prompt and a **JSON schema with the rules of this request**: exactly 3 recipes, `usedIngredients` only from the available ingredients and at least 70 % of them, at most 3 `extraIngredients`, `estimatedMinutes` inside the chosen time frame, 4–12 steps with `cook` between 1 and the number of cooks, nutrition per portion and in total (keto: at most 20 g carbs per portion).
+4. **Generate Recipes** (Basic LLM Chain with Ollama Cloud `gemma4:31b`) returns the answer through the **Structured Output Parser**, which reads the schema from `$json.recipeSchema` and validates the answer against it. Its **auto-fix** sends a broken answer back to the same model together with the parser error. A failed model call is retried once (`retryOnFail`).
+5. **Shape Recipes** only formats the checked recipes for the app (step texts, per-cook step details, ingredient coverage); there is no hand-written validation loop.
+6. **Log Recipe Error** writes failures of any step to the execution log and Firebase `logs/recipeErrors`; the app only gets a friendly message (500).
 
 Every node has a description (visible under the node) and the canvas is split into sticky-note sections.
 
@@ -92,9 +95,9 @@ Every node has a description (visible under the node) and the canvas is split in
    - API Key: your key from https://ollama.com/settings/keys
    - Base URL: `https://ollama.com/v1`
    - the native Ollama Chat Model node did not send the API key to Ollama Cloud (401), hence the OpenAI-compatible route
-4. **Firebase**: set your Realtime Database URL in *Check IP Quota*, *Log Recipe Error* and *Format Error Report* (`const dbUrl = …`) and deploy the rules with `firebase deploy --only database`.
-5. **Error handling**: in *Code-a-Cuisine Error Handler* open *Send Error Email*, add an SMTP credential, sender and recipient. In the recipe workflow open *Settings → Error workflow* and pick *Code-a-Cuisine Error Handler*.
-6. **Activate** the recipe workflow and set `n8nBaseUrl` in `src/environments/environment*.ts`.
+4. **Firebase**: set your Realtime Database URL in *Check IP Quota*, *Log Recipe Error* and *Format Error Report* (`const dbUrl = …`) and deploy the rules with `firebase deploy --only database`. The quota only works with these rules: they allow the "+1" writes the workflow makes without any secret.
+5. **Error handling**: in *Code-a-Cuisine Error Handler* open *Send Error Email* and add an SMTP credential for the sender address (sender and recipient are set). The recipe workflow already points to it under *Settings → Error workflow*; after an import, pick *Code-a-Cuisine Error Handler* there again.
+6. **Publish** the recipe workflow and set `n8nBaseUrl` in `src/environments/environment*.ts`.
 
 ## Quick test
 

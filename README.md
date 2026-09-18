@@ -15,12 +15,12 @@
 
 ## Features
 
-- **Ingredients in, recipes out.** Add at least three ingredients with quantity and unit, and the AI builds three matching recipes around them.
-- **Preferences.** Portions, number of cooks, cooking time (quick / medium / complex), cuisine (German, Italian, Indian, Japanese, Gourmet, Fusion) and diets (vegetarian, vegan, keto).
-- **Step-by-step directions.** Each recipe splits your ingredients from the extras it needs and assigns steps to the cooks.
-- **Cookbook.** Every generated recipe is saved. Browse by cuisine, see the most liked recipes and give your favourites a heart.
-- **Fair use limit.** 3 generations per IP and 12 in total per 24 hours, enforced in the workflow and stored in Firebase.
-- **Responsive.** Built for desktop and mobile.
+- **Ingredients in, recipes out.** Add at least one ingredient with quantity and unit, and the AI builds three matching recipes around them.
+- **Preferences.** Portions (1–12), number of cooks (1–3), cooking time (quick / medium / complex), cuisine (German, Italian, Indian, Japanese, Gourmet / Fine Dining, Fusion) and diets (vegetarian, vegan, keto, no restrictions).
+- **Step-by-step directions.** Each recipe splits your ingredients from the extras it needs, assigns steps to the cooks, marks parallel steps and shows nutrition per portion and for the whole recipe.
+- **Cookbook.** Every generated recipe is saved, five sample recipes are preinstalled. Browse by cuisine or all recipes (20 per page), see the most liked recipes and give your favourites a heart.
+- **Fair use limit.** 3 generations per IP and 12 in total per calendar day plus a 15 second throttle, enforced in the workflow; Firebase only accepts "+1" on the counters.
+- **Responsive.** Separate layouts for laptops and phones/tablets, in portrait and landscape.
 
 ## Screenshots
 
@@ -44,18 +44,19 @@ flowchart LR
     C -- "limit reached" --> D[429 response]
     C -- ok --> E[LLM chain]
     E <--> F[Ollama Cloud<br/>gemma4:31b]
-    E --> G[Validate 3 recipes]
-    G -- "rule broken, 1 retry" --> E
-    G --> A
+    E --> G[Output parser<br/>schema + auto-fix]
+    G -- "broken answer" --> F
+    G --> S[Shape recipes]
+    S --> A
     C <--> H[(Firebase<br/>Realtime DB)]
     A <-- "cookbook, likes, ingredients" --> H
 ```
 
 1. The app sends the ingredient list and preferences to the n8n webhook `code-a-cuisine-recipe`.
 2. The workflow validates the request again (ingredients, quantities, units, portions, cooks, time, cuisine, diets) and answers invalid input with 400.
-3. It reads the caller IP (IPv4 or IPv6) from the proxy headers and enforces 3 recipes per IP per day, 12 per day in total and a 15 second throttle, stored in Firebase (429 with a readable message).
-4. A Basic LLM Chain with a structured output parser asks the model for exactly three recipes in a fixed JSON schema: at least 70 % of your ingredients, at most 3 extras, scaled quantities, tasks per cook with parallel steps, and nutrition per portion and in total.
-5. The answer is checked against these rules and retried once with feedback. Failures are logged in Firebase and answered with 500; crashes trigger the error workflow with an email.
+3. It takes the caller IP from the Cloudflare header (IPv4 or IPv6, stored only as a hash) and enforces 3 recipes per IP per day, 12 per day in total and a 15 second throttle in Firebase (429 with a readable message).
+4. A Basic LLM Chain asks the model for three recipes. The rules of the request (at least 70 % of your ingredients, at most 3 extras, time frame, cooks, 4–12 steps, nutrition per portion and in total) are part of a JSON schema, and the Structured Output Parser enforces it; its auto-fix lets the model repair a broken answer.
+5. Failures are logged in Firebase and answered with 500; crashes trigger the error workflow with an email.
 6. The app stores the recipes in Firebase so they show up in the cookbook.
 
 ## Tech stack
@@ -103,16 +104,30 @@ export const environment = {
 ```
 src/app/
 ├── hero/               start page
-├── generate-recipe/    ingredient input
+├── generate-recipe/    ingredient input with autocomplete
 ├── preferences/        preferences, quota handling, webhook request
 ├── results/            the three generated recipes
-├── recipe-detail/      ingredients and directions
-├── cookbook/           saved recipes, most liked
-├── cookbook-category/  recipes per cuisine
-└── impress/            imprint
-n8n/                    workflow export and setup guide
+├── recipe-detail/      ingredients, nutrition chart and directions per cook
+├── cookbook/           cookbook overview, most liked, preinstalled sample recipes
+├── cookbook-category/  recipes per cuisine and all recipes, 20 per page
+├── impress/            imprint
+├── components/         header, footer, button, link and image components
+├── recipe-library.service.ts   Firebase access for recipes and likes
+└── loading-state.service.ts    loading state shared with the header
+n8n/                    workflow exports and setup guide
 docs/screenshots/       README images
 ```
+
+## Build, test and deploy
+
+```bash
+npm test               # unit tests (Vitest)
+npx ng build           # production build in dist/Code-a-Cuisine/browser
+```
+
+The production build uses the base href `/Code-a-Cuisine/` and hash routing, so the `browser` folder can be uploaded to any static web space.
+
+Live demo: https://alexander-lindt.developerakademie.net/Code-a-Cuisine/
 
 ## Author
 
