@@ -12,6 +12,13 @@
     font-weight: 600;
     line-height: 1.25;
     border-radius: 0;
+
+    // Phones held sideways have little height.
+    @media only screen and (max-height: 520px) {
+      min-height: 44px;
+      padding: 8px 20px;
+      font-size: 16px;
+    }
   }
 }
 

@@ -109,6 +109,11 @@ a.router-link.--dark-bottom:hover app-images-component {
       min-width: 24px;
       margin-left: 0;
     }
+
+    // Phones held sideways: narrower paddings so the link fits beside the headline.
+    @media only screen and (max-height: 520px) {
+      padding: 12px 16px;
+    }
   }
 }
 

@@ -469,9 +469,27 @@
     overflow-x: clip;
   }
 
-  // Same 40px side margin as the logo in the header.
+  .home {
+    // Side margin and bottom edge of the header logo: the header pads it 40px in from
+    // 660px on and 16px / 12px on narrower screens.
+    --hero-gutter: 40px;
+    --logo-bottom: 88px;
+    --logo-gap: 40px;
+
+    @media only screen and (max-width: 659px) {
+      --hero-gutter: 16px;
+      --logo-bottom: 60px;
+    }
+
+    // Phones held sideways: little height, so tighter gaps.
+    @media only screen and (max-height: 520px) {
+      --logo-gap: 20px;
+    }
+  }
+
+  // Same side margin as the logo in the header.
   .content-limited {
-    padding: 0 40px;
+    padding: 0 var(--hero-gutter);
   }
 
   .home-content {
@@ -490,8 +508,8 @@
       max-width: calc(100% - #{mixin.design-size(560)});
 
       .top-content {
-        // At least 40px below the logo (which ends 12px into the section).
-        margin: max(28px, calc(#{mixin.design-size(240)} - 100px)) 0 0;
+        // Keeps --logo-gap below the logo, wherever the header puts it.
+        margin: max(0px, calc(var(--logo-bottom) + var(--logo-gap) - 100px), calc(#{mixin.design-size(240)} - 100px)) 0 0;
         padding: 0;
 
         & > p {
@@ -568,7 +586,7 @@
       display: block;
       position: absolute;
       top: calc(-100px - #{mixin.design-size(42)});
-      right: calc(#{mixin.design-size(49)} - 40px);
+      right: calc(#{mixin.design-size(49)} - var(--hero-gutter));
       bottom: auto;
       left: auto;
       width: mixin.design-size(480);
@@ -894,6 +912,24 @@
       @include quiet-imprint-link;
       bottom: 0;
       left: 16px;
+    }
+  }
+}
+
+// Phones held sideways: the laptop layout with less height. The teaser headline and link may
+// wrap onto two lines instead of running into the plates, and the controls get compact paddings.
+@include mixin.laptop {
+  @media only screen and (max-height: 520px) {
+    .home-content .content-left {
+      .bottom-section {
+        flex-wrap: wrap;
+        column-gap: 16px;
+        row-gap: 0;
+
+        & > p {
+          font-size: max(18px, #{mixin.design-size(32)});
+        }
+      }
     }
   }
 }

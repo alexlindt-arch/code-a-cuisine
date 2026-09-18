@@ -112,10 +112,11 @@
     
 /// Landscape screens from 850px on use the 1440x1024 hero design, scaled down, however
 /// short the window is (e.g. with the DevTools docked below). At 850px the mobile headline
-/// has just become one line as well, so the switch hardly shows. Portrait tablets keep the
-/// mobile layout.
+/// has just become one line as well, so the switch hardly shows. Phones held sideways
+/// (landscape, at most 520px high) use it too. Portrait tablets keep the mobile layout.
 @mixin laptop {
-  @media only screen and (min-width: 850px) and (orientation: landscape) {
+  @media only screen and (min-width: 850px) and (orientation: landscape),
+    only screen and (max-height: 520px) and (orientation: landscape) {
     @content;
   }
 }
