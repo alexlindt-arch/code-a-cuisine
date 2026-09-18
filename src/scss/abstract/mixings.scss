@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use 'sass:meta';
+@use 'sass:math';
 
 @mixin flex-center(){
     display: flex;
@@ -109,3 +110,30 @@
     }
   }
     
+/// Laptop and desktop screens in landscape, the viewport the 1440x1024 hero design was
+/// drawn for. Portrait tablets and very short windows keep their own layouts.
+@mixin laptop {
+  @media only screen and (min-width: 1024px) and (min-height: 560px) and (orientation: landscape) {
+    @content;
+  }
+}
+
+/// Scales a length from the 1440x1024 design frame to the viewport: the stricter of
+/// width and height wins and the design size is the upper limit, so the composition
+/// keeps its proportions on 1366x768 as well as on 1920x1080.
+@function design-size($px) {
+  @return min(#{$px}px, #{math.div($px * 100, 1440)}vw, #{math.div($px * 100, 1024)}svh);
+}
+
+/// Phones held upright, the viewport the 375x812 mobile hero design was drawn for.
+@mixin phone-portrait {
+  @media only screen and (max-width: 659px) and (orientation: portrait) {
+    @content;
+  }
+}
+
+/// Like design-size(), for the 375x812 mobile frame; phones up to 20% larger than the
+/// frame may scale up a little.
+@function mobile-size($px) {
+  @return min(#{$px * 1.2}px, #{math.div($px * 100, 375)}vw, #{math.div($px * 100, 812)}svh);
+}

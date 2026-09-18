@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+@use './scss/base/web-fonts';
 @use './scss/base/base' as base;
 @use './scss/abstract/mixings' as mixin;
 @use './scss/components/variablen' as var;

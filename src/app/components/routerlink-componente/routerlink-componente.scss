@@ -86,3 +86,50 @@ a.router-link.--dark-bottom {
 a.router-link.--dark-bottom:hover app-images-component {
   transform: translateX(8px);
 }
+
+// Secondary button creme from the hero design: text link with a 24px arrow.
+@include mix.laptop {
+  a.router-link.--hero {
+    width: auto;
+    gap: 10px;
+    padding: 16px 26px;
+    border-radius: 5px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: max(16px, mix.design-size(20));
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: rgba(250, 240, 230, 0.12);
+    }
+
+    app-images-component {
+      width: 24px;
+      min-width: 24px;
+      margin-left: 0;
+    }
+  }
+}
+
+// Secondary button creme mob.: text with a 20px arrow.
+@include mix.phone-portrait {
+  a.router-link.--hero {
+    width: auto;
+    min-height: 52px;
+    gap: 10px;
+    padding: 4px 16px;
+    border-radius: 5px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: max(16px, #{mix.mobile-size(18)});
+    font-weight: 500;
+    line-height: 22px;
+    white-space: nowrap;
+
+    app-images-component {
+      width: 20px;
+      min-width: 20px;
+      margin-left: 0;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 @use '../../scss/components/variablen' as var;
 @use '../../scss/abstract/mixings' as mixin;
+@use 'sass:math';
 
 .home-content {
   position: relative;
@@ -455,5 +456,312 @@
   .home-content .content-right {
     height: auto;
     min-height: 0;
+  }
+}
+
+// Laptop layout from the 1440x1024 hero design. Every length goes through design-size(),
+// so the frame shrinks as a whole on smaller laptops instead of reflowing. The header
+// above is 100px high; the design frame starts at the top of the viewport.
+@include mixin.laptop {
+  // The rotated bottom plate reaches past the right edge of narrower laptops; clip it
+  // horizontally only, the plates still have to overlap the header above.
+  .home {
+    overflow-x: clip;
+  }
+
+  // Same 40px side margin as the logo in the header.
+  .content-limited {
+    padding: 0 40px;
+  }
+
+  .home-content {
+    display: block;
+    // .content-limited is a flex row, a block child would shrink to its content.
+    width: 100%;
+    height: calc(100svh - 100px);
+    min-height: 0;
+
+    .content-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+      min-height: 0;
+      max-width: calc(100% - #{mixin.design-size(560)});
+
+      .top-content {
+        margin: max(24px, calc(#{mixin.design-size(240)} - 100px)) 0 0;
+        padding: 0;
+
+        & > p {
+          width: auto;
+          margin: 0;
+          font-family: 'Quicksand', sans-serif;
+          font-size: mixin.design-size(48);
+          font-weight: 600;
+          line-height: 1.25;
+          color: #F5F5DC;
+          white-space: nowrap;
+        }
+
+        & > h1 {
+          width: auto;
+          margin: 0;
+          font-family: 'Ubuntu', sans-serif;
+          font-size: mixin.design-size(104);
+          font-weight: 700;
+          line-height: 1.144;
+          white-space: nowrap;
+        }
+
+        .button-content {
+          margin-top: mixin.design-size(64);
+        }
+      }
+
+      .bottom-section {
+        justify-content: flex-start;
+        gap: 16px;
+        width: auto;
+        margin: auto 0 mixin.design-size(126);
+
+        & > p {
+          width: auto;
+          margin: 0;
+          font-family: 'Ubuntu', sans-serif;
+          font-size: max(22px, mixin.design-size(32));
+          font-weight: 500;
+          line-height: 1.04;
+          white-space: nowrap;
+        }
+      }
+
+      // Not part of the design, but the imprint has to stay reachable: small and quiet
+      // in the bottom left corner, below the cookbook teaser.
+      .impressum-link {
+        position: absolute;
+        bottom: mixin.design-size(40);
+        left: 0;
+        width: auto;
+        margin: 0;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 16px;
+        opacity: 0.8;
+        text-align: start;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    // "Visuals" group of the design: 480px wide, starting 42px above the viewport and
+    // cut off by its bottom edge. Only the vertical overflow is clipped, so the drop
+    // shadows and the rotated bottom plate may reach past the sides.
+    .content-right {
+      display: block;
+      position: absolute;
+      top: calc(-100px - #{mixin.design-size(42)});
+      right: calc(#{mixin.design-size(49)} - 40px);
+      bottom: auto;
+      left: auto;
+      width: mixin.design-size(480);
+      height: calc(100svh + #{mixin.design-size(42)});
+      transform: none;
+      overflow-x: visible;
+      overflow-y: clip;
+
+      app-images-component {
+        display: block;
+        position: absolute;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        filter: drop-shadow(6px -2px 4px rgba(0, 0, 0, 0.25));
+
+        ::ng-deep img {
+          display: block;
+          width: 100%;
+          max-width: none;
+          height: auto;
+        }
+      }
+
+      // Hero Visual 03, 02 and 01, from top to bottom; each plate lies on the one above.
+      app-images-component:nth-child(1) {
+        top: 0;
+        left: mixin.design-size(5);
+        width: mixin.design-size(470);
+        margin-top: 0;
+      }
+
+      app-images-component:nth-child(2) {
+        top: mixin.design-size(315);
+        left: mixin.design-size(-8);
+        width: mixin.design-size(484);
+        margin-top: 0;
+      }
+
+      app-images-component:nth-child(3) {
+        top: mixin.design-size(655);
+        left: mixin.design-size(-4);
+        width: mixin.design-size(480);
+        margin-top: 0;
+        transform: rotate(18.91deg);
+      }
+
+      app-images-component:nth-child(4),
+      app-images-component:nth-child(5) {
+        display: none;
+      }
+    }
+  }
+}
+
+// Mobile layout from the 375x812 hero design, scaled with mobile-size(). The header above
+// is 100px high; the design frame starts at the top of the viewport.
+@include mixin.phone-portrait {
+  .content-limited {
+    padding: 0 16px;
+  }
+
+  .home-content {
+    display: block;
+    width: 100%;
+    height: calc(100svh - 100px);
+    min-height: 0;
+
+    .content-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+      min-height: 0;
+
+      .top-content {
+        margin: max(0px, calc(#{mixin.mobile-size(96)} - 100px)) 0 0;
+        padding: 0;
+
+        & > p {
+          width: mixin.mobile-size(203);
+          margin: 0;
+          padding: 0;
+          font-family: 'Quicksand', sans-serif;
+          font-size: mixin.mobile-size(24);
+          font-weight: 600;
+          line-height: 1.25;
+          color: #F5F5DC;
+        }
+
+        & > h1 {
+          width: mixin.mobile-size(222);
+          margin: mixin.mobile-size(8) 0 0;
+          font-family: 'Ubuntu', sans-serif;
+          font-size: mixin.mobile-size(64);
+          font-weight: 700;
+          line-height: 1.125;
+          white-space: normal;
+        }
+
+        .button-content {
+          margin-top: mixin.mobile-size(40);
+        }
+      }
+
+      // Headline and link text share one left edge, 16px in, where the link's padding ends.
+      .bottom-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        width: auto;
+        margin: auto 0 mixin.mobile-size(38);
+
+        & > p {
+          width: auto;
+          max-width: mixin.mobile-size(164);
+          margin: 0;
+          padding-left: 16px;
+          box-sizing: content-box;
+          font-family: 'Ubuntu', sans-serif;
+          font-size: mixin.mobile-size(24);
+          font-weight: 500;
+          line-height: 1.2;
+        }
+      }
+
+      // Not part of the design, but the imprint has to stay reachable.
+      .impressum-link {
+        position: absolute;
+        bottom: mixin.mobile-size(8);
+        left: 0;
+        width: auto;
+        margin: 0;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 14px;
+        opacity: 0.8;
+      }
+    }
+
+    // "Visuals" group: starts 23px below the top of the viewport and runs off the right
+    // and bottom edges, where it is cut off.
+    .content-right {
+      display: block;
+      position: absolute;
+      top: calc(#{mixin.mobile-size(23)} - 100px);
+      right: -16px;
+      bottom: 0;
+      // Horizontal position follows the width only: on short phones the plates shrink
+      // with the height, but must not move over the cookbook teaser.
+      left: calc(#{math.div(246 * 100, 375)}vw - 16px);
+      width: auto;
+      height: auto;
+      transform: none;
+      overflow: hidden;
+
+      app-images-component {
+        display: block;
+        position: absolute;
+        left: 0;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        filter: drop-shadow(-6px 2px 4px rgba(0, 0, 0, 0.25));
+
+        ::ng-deep img {
+          display: block;
+          width: 100%;
+          max-width: none;
+          height: auto;
+        }
+      }
+
+      app-images-component:nth-child(1) {
+        top: 0;
+        left: mixin.mobile-size(1);
+        width: mixin.mobile-size(296);
+        margin-top: 0;
+      }
+
+      // The design mirrors the lower two plates, so they do not repeat the look of the
+      // desktop column.
+      app-images-component:nth-child(2) {
+        top: mixin.mobile-size(266);
+        width: mixin.mobile-size(303);
+        margin-top: 0;
+        transform: rotate(-45deg) scaleX(-1);
+      }
+
+      app-images-component:nth-child(3) {
+        top: mixin.mobile-size(532);
+        width: mixin.mobile-size(300);
+        margin-top: 0;
+        transform: rotate(39.7deg) scaleY(-1);
+      }
+
+      app-images-component:nth-child(4),
+      app-images-component:nth-child(5) {
+        display: none;
+      }
+    }
   }
 }

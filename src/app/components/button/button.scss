@@ -1,2 +1,29 @@
 @use '../../../scss/components/_button.scss';
+@use '../../../scss/abstract/mixings' as mixin;
 
+
+// Primary button creme from the hero design.
+@include mixin.laptop {
+  .btn.--primary {
+    min-height: 60px;
+    padding: 16px 26px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: max(18px, mixin.design-size(24));
+    font-weight: 600;
+    line-height: 1.25;
+    border-radius: 0;
+  }
+}
+
+// Mobile primary button creme.
+@include mixin.phone-portrait {
+  .btn.--primary {
+    min-height: 52px;
+    padding: 4px 16px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    border-radius: 0;
+  }
+}

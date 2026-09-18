@@ -1,0 +1,26 @@
+// Typography of the hero design: Quicksand as a variable font (300-700, covers the
+// 500/600 weights) and Ubuntu for the display headlines. Self-hosted, so no request
+// goes to Google.
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(../../assets/fonts/quicksand-variable-latin.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../../assets/fonts/ubuntu-500-latin.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(../../assets/fonts/ubuntu-700-latin.woff2) format('woff2');
+}
