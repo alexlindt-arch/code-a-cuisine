@@ -515,11 +515,15 @@
         }
 
         .button-content {
+          position: static;
           margin-top: mixin.design-size(64);
         }
       }
 
       .bottom-section {
+        position: static;
+        flex-direction: row;
+        align-items: center;
         justify-content: flex-start;
         gap: 16px;
         width: auto;
@@ -610,9 +614,28 @@
         transform: rotate(18.91deg);
       }
 
-      app-images-component:nth-child(4),
+      // Windows narrower than the 1440:1024 frame (e.g. 1024x1000) would leave the bottom
+      // of the column empty, so the stack continues with the same spacing. In the design
+      // proportions these two lie below the fold.
+      app-images-component:nth-child(4) {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        top: mixin.design-size(995);
+        left: mixin.design-size(5);
+        width: mixin.design-size(470);
+        margin-top: 0;
+      }
+
       app-images-component:nth-child(5) {
-        display: none;
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        top: mixin.design-size(1335);
+        left: mixin.design-size(-8);
+        width: mixin.design-size(484);
+        margin-top: 0;
+        transform: rotate(-12deg);
       }
     }
   }
@@ -820,4 +843,49 @@
 // "recipe generator" wraps as one unit, never as "AI-Powered recipe / generator".
 .keep-together {
   white-space: nowrap;
+}
+
+// Imprint link as a quiet footer line: 44px high hit area, underline on hover, and the
+// same left edge as the text above it.
+@mixin quiet-imprint-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@include mixin.laptop {
+  // Lines up with "Hungry for inspiration?"; the text keeps its 40px distance to the bottom.
+  .home-content .content-left .impressum-link {
+    @include quiet-imprint-link;
+    bottom: calc(#{mixin.design-size(40)} - 12px);
+  }
+}
+
+@include mixin.compact {
+  // Starts where the teaser texts start (16px in, like the link's padding) and gets its
+  // own row below the cookbook link instead of squeezing against the bottom edge.
+  .home-content .content-left {
+    .bottom-section {
+      margin-bottom: max(48px, #{mixin.mobile-size(38)});
+    }
+
+    .impressum-link {
+      @include quiet-imprint-link;
+      bottom: 0;
+      left: 16px;
+    }
+  }
 }
