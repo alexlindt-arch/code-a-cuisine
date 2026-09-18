@@ -5,12 +5,11 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, ActivatedRoute } from '@angular/router';
 import { Header } from './components/header/header';
-import { Footer } from './components/footer/footer';
 import { clearStoredIngredients, RECIPE_CONTEXT_STORAGE_KEY } from './generate-recipe/generate-recipe.utils';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer],
+  imports: [RouterOutlet, Header],
   templateUrl: './app.html',
   styleUrls: ['./app.scss']
 })

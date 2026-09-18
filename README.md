@@ -111,7 +111,7 @@ src/app/
 ├── cookbook/           cookbook overview, most liked, preinstalled sample recipes
 ├── cookbook-category/  recipes per cuisine and all recipes, 20 per page
 ├── impress/            imprint
-├── components/         header, footer, button, link and image components
+├── components/         header, button, link and image components
 ├── recipe-library.service.ts   Firebase access for recipes and likes
 └── loading-state.service.ts    loading state shared with the header
 n8n/                    workflow exports and setup guide
