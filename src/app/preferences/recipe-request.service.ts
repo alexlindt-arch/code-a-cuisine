@@ -137,6 +137,7 @@ export class RecipeRequestService {
       case 'INVALID_REQUEST':
         return 'invalid';
       case 'RECIPE_GENERATION_FAILED':
+      case 'QUOTA_UNAVAILABLE':
         return 'failed';
     }
     return this.getDialogKindFromStatus(details.status, error);

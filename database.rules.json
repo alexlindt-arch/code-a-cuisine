@@ -5,32 +5,43 @@
     "recipes": {
       ".read": true,
       "$recipeId": {
-        ".write": "!data.exists()",
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['title', 'ingredients', 'steps', 'cuisine', 'createdAt']) && newData.child('title').isString() && newData.child('title').val().length > 0 && newData.child('title').val().length <= 200",
         "likes": {
           ".write": true,
-          ".validate": "newData.isNumber() && newData.val() >= 0"
+          ".validate": "newData.isNumber() && newData.val() >= 0 && ((!data.exists() && newData.val() <= 1) || (data.exists() && (newData.val() === data.val() + 1 || newData.val() === data.val() - 1)))"
         }
       }
     },
     "ingredients": {
       ".read": true,
       "$ingredientId": {
-        ".write": "!data.exists()"
+        ".write": "!data.exists() && newData.exists()",
+        ".validate": "$ingredientId.length <= 80"
       }
     },
     "quota": {
-      ".read": true,
-      ".write": true
-    },
-    "quotaRolling": {
-      ".read": true,
-      ".write": true
+      "$date": {
+        "global": {
+          ".read": true,
+          ".write": "newData.exists()",
+          ".validate": "newData.isNumber() && ((!data.exists() && newData.val() === 1) || (data.exists() && newData.val() === data.val() + 1))"
+        },
+        "ips": {
+          "$ipKey": {
+            ".read": true,
+            ".write": "newData.exists()",
+            ".validate": "newData.hasChildren(['count', 'lastRequestAt']) && newData.child('count').isNumber() && ((!data.exists() && newData.child('count').val() === 1) || (data.exists() && newData.child('count').val() === data.child('count').val() + 1)) && newData.child('lastRequestAt').isNumber() && newData.child('lastRequestAt').val() <= now + 60000 && newData.child('lastRequestAt').val() >= now - 60000"
+          }
+        }
+      }
     },
     "logs": {
       ".read": false,
       "$logType": {
         "$entryId": {
-          ".write": "!data.exists() && newData.exists()"
+          ".write": "!data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['at', 'message']) && newData.child('message').isString() && newData.child('message').val().length <= 2000"
         }
       }
     }

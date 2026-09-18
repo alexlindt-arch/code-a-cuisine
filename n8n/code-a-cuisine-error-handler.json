@@ -31,8 +31,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "",
-        "toEmail": "",
+        "fromEmail": "alex.lindt@t-online.de",
+        "toEmail": "alex.lindt@t-online.de",
         "subject": "={{ $json.subject }}",
         "emailFormat": "text",
         "text": "={{ $json.text }}",
@@ -46,12 +46,12 @@
         520,
         300
       ],
-      "notes": "Sends the report by email. Needs an SMTP credential and a sender and recipient address.",
+      "notes": "Sends the error report by email. Needs an SMTP credential (e.g. securesmtp.t-online.de, port 465, SSL) for the sender address.",
       "notesInFlow": true
     },
     {
       "parameters": {
-        "content": "## Error handler\n1. Open **Send Error Email**, add an SMTP credential and fill in sender and recipient.\n2. In the recipe workflow open Settings -> Error workflow and choose this workflow.",
+        "content": "## Error handler\nCatches every crash of the recipe workflow (Settings -> Error workflow points here), stores the report in Firebase logs/workflowErrors and emails it to alex.lindt@t-online.de.\n\nSetup once: open **Send Error Email** and select an SMTP credential for the sender address.",
         "height": 460,
         "width": 780,
         "color": 5
