@@ -113,7 +113,7 @@
 /// Laptop and desktop screens in landscape, the viewport the 1440x1024 hero design was
 /// drawn for. Portrait tablets and very short windows keep their own layouts.
 @mixin laptop {
-  @media only screen and (min-width: 1024px) and (min-height: 560px) and (orientation: landscape) {
+  @media only screen and (min-width: 1024px) and (min-height: 521px) and (orientation: landscape) {
     @content;
   }
 }
@@ -125,15 +125,18 @@
   @return min(#{$px}px, #{math.div($px * 100, 1440)}vw, #{math.div($px * 100, 1024)}svh);
 }
 
-/// Phones held upright, the viewport the 375x812 mobile hero design was drawn for.
-@mixin phone-portrait {
-  @media only screen and (max-width: 659px) and (orientation: portrait) {
+/// Everything below the laptop layout: phones and tablets in portrait, and windows narrower
+/// than 1024px, all share the 375x812 mobile hero design. Only very short landscape
+/// viewports (phones held sideways) keep their own layout.
+@mixin compact {
+  @media only screen and (max-width: 1023px) and (min-height: 521px),
+    only screen and (orientation: portrait) and (min-height: 521px) {
     @content;
   }
 }
 
-/// Like design-size(), for the 375x812 mobile frame; phones up to 20% larger than the
-/// frame may scale up a little.
+/// Like design-size(), for the 375x812 mobile frame: shrinks on smaller phones, never grows
+/// past the design size, so nothing gets bigger or moves around on tablets.
 @function mobile-size($px) {
-  @return min(#{$px * 1.2}px, #{math.div($px * 100, 375)}vw, #{math.div($px * 100, 812)}svh);
+  @return min(#{$px}px, #{math.div($px * 100, 375)}vw, #{math.div($px * 100, 812)}svh);
 }

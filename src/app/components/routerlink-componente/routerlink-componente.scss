@@ -113,7 +113,7 @@ a.router-link.--dark-bottom:hover app-images-component {
 }
 
 // Secondary button creme mob.: text with a 20px arrow.
-@include mix.phone-portrait {
+@include mix.compact {
   a.router-link.--hero {
     width: auto;
     min-height: 52px;

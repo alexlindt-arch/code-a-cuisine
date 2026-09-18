@@ -618,11 +618,22 @@
   }
 }
 
-// Mobile layout from the 375x812 hero design, scaled with mobile-size(). The header above
-// is 100px high; the design frame starts at the top of the viewport.
-@include mixin.phone-portrait {
+// Mobile layout from the 375x812 hero design, used for phones and tablets alike. Lengths go
+// through mobile-size(): they shrink on smaller phones but never grow, so dragging the
+// window wider only adds room between the text and the plates. The header above is 100px
+// high; the design frame starts at the top of the viewport.
+@include mixin.compact {
+  .home {
+    // Same side margin as the logo in the header: 16px on phones, 40px from 660px on.
+    --hero-gutter: 16px;
+
+    @media only screen and (min-width: 660px) {
+      --hero-gutter: 40px;
+    }
+  }
+
   .content-limited {
-    padding: 0 16px;
+    padding: 0 var(--hero-gutter);
   }
 
   .home-content {
@@ -664,12 +675,14 @@
         }
 
         .button-content {
+          position: static;
           margin-top: mixin.mobile-size(40);
         }
       }
 
       // Headline and link text share one left edge, 16px in, where the link's padding ends.
       .bottom-section {
+        position: static;
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
@@ -699,32 +712,37 @@
         font-family: 'Quicksand', sans-serif;
         font-size: 14px;
         opacity: 0.8;
+        text-align: start;
       }
     }
 
-    // "Visuals" group: starts 23px below the top of the viewport and runs off the right
-    // and bottom edges, where it is cut off.
+    // "Visuals" group: starts 23px below the top of the viewport and hangs on the right
+    // edge of the screen. On a 375px phone 129px of the plates show, as in the design;
+    // wider screens reveal more of them until the whole plates are visible (from ~680px),
+    // after that the column stays put. The 8px extra on the left keep the drop shadows.
     .content-right {
+      --plates-visible: clamp(#{mixin.mobile-size(129)}, calc(129px + (100vw - 375px) * 0.7), 340px);
       display: block;
       position: absolute;
       top: calc(#{mixin.mobile-size(23)} - 100px);
-      right: -16px;
+      right: calc(-1 * var(--hero-gutter));
       bottom: 0;
-      // Horizontal position follows the width only: on short phones the plates shrink
-      // with the height, but must not move over the cookbook teaser.
-      left: calc(#{math.div(246 * 100, 375)}vw - 16px);
-      width: auto;
+      left: auto;
+      width: calc(var(--plates-visible) + 8px);
       height: auto;
+      margin: 0;
       transform: none;
       overflow: hidden;
 
       app-images-component {
         display: block;
         position: absolute;
-        left: 0;
+        left: 8px;
         max-width: none;
         max-height: none;
         margin: 0;
+        opacity: 1;
+        visibility: visible;
         filter: drop-shadow(-6px 2px 4px rgba(0, 0, 0, 0.25));
 
         ::ng-deep img {
@@ -737,12 +755,12 @@
 
       app-images-component:nth-child(1) {
         top: 0;
-        left: mixin.mobile-size(1);
+        left: calc(8px + #{mixin.mobile-size(1)});
         width: mixin.mobile-size(296);
         margin-top: 0;
       }
 
-      // The design mirrors the lower two plates, so they do not repeat the look of the
+      // The design mirrors the lower plates, so they do not repeat the look of the
       // desktop column.
       app-images-component:nth-child(2) {
         top: mixin.mobile-size(266);
@@ -758,9 +776,21 @@
         transform: rotate(39.7deg) scaleY(-1);
       }
 
-      app-images-component:nth-child(4),
+      // Tall tablets: the stack continues with the same spacing instead of leaving the
+      // bottom of the column empty. On phones these two are cut off by the bottom edge.
+      app-images-component:nth-child(4) {
+        display: block;
+        top: mixin.mobile-size(798);
+        width: mixin.mobile-size(296);
+        margin-top: 0;
+      }
+
       app-images-component:nth-child(5) {
-        display: none;
+        display: block;
+        top: mixin.mobile-size(1064);
+        width: mixin.mobile-size(303);
+        margin-top: 0;
+        transform: rotate(-45deg) scaleX(-1);
       }
     }
   }
