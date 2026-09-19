@@ -33,7 +33,10 @@ h1 {
   margin: 0;
 }
 
-section {
+// Page sections only (the root section of every routed page). Nested sections inside a page
+// (nutrition, ingredient lists, cook columns ...) must not stretch to the viewport height, that
+// left large empty gaps on the recipe detail page.
+main > * > section {
   // min-height, never a fixed height: a section shorter than its own content stopped
   // painting its background halfway down the page, which left a white bar below the
   // content with the text sticking into it (most visible in landscape on phones).

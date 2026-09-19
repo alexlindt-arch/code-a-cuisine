@@ -4,6 +4,10 @@
 header {
   height: 100px;
   width: 100%;
+  // The page below overlaps the header by 1px: with display scaling (125 %) and some window
+  // widths the border between the two green areas fell on half a device pixel and showed up
+  // as a thin light line under the logo.
+  margin-bottom: -1px;
   background-color: var.$primary-bg;
   color: var.$primary-text-color;
 }

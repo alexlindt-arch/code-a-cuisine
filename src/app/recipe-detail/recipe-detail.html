@@ -156,7 +156,7 @@
             @if (hasStepDetails()) {
             @for (list of cookTodoLists(); track list.cook) {
             <section class="cook-list" [attr.aria-labelledby]="'cook-list-heading-' + list.cook">
-              <h3 class="cook-list-heading" [id]="'cook-list-heading-' + list.cook">
+              <h3 class="cook-list-heading" [id]="'cook-list-heading-' + list.cook" [attr.data-cook]="list.cook">
                 <img class="cook-list-icon" [src]="list.iconSrc" alt="">
                 <span>{{ 'common.cook' | t: { number: list.cook } }}</span>
                 <span class="cook-list-count">{{ list.steps.length }} {{ (list.steps.length === 1 ? 'detail.task' : 'detail.tasks') | t }}</span>
@@ -228,12 +228,11 @@
           <p class="like-status like-status-error">{{ 'detail.likeError' | t }}</p>
           }
         </div>
-
-        <aside class="cta-banner" [attr.aria-label]="'common.cookbook' | t">
-          <p>{{ 'detail.inspiration' | t }}</p>
-          <a [routerLink]="'/cookbook'">{{ 'common.cookbook' | t }}</a>
-        </aside>
       </article>
+      <aside class="cta-banner" [attr.aria-label]="'common.cookbook' | t">
+        <p>{{ 'detail.inspiration' | t }}</p>
+        <a [routerLink]="'/cookbook'">{{ 'common.cookbook' | t }}</a>
+      </aside>
       <nav class="bottom-actions" [attr.aria-label]="'results.nextSteps' | t">
         <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'common.generateRecipe' | t"
           [targetPath]="'/generate-recipe'"

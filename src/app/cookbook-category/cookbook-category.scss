@@ -399,3 +399,154 @@
   white-space: nowrap;
   border: 0;
 }
+
+// ===========================================================================
+// Design pass (cuisine page from the Figma file): banner, then a 900px list. Each recipe is
+// one compact row: round number, cooking time above the title, tags on the right. On phones
+// the row stacks (number + time, title, tags) and every second row gets a cream background.
+// ===========================================================================
+.category-shell {
+  font-family: 'Quicksand', sans-serif;
+
+  :is(p, h1, h2, a, li, span, button) {
+    font-family: 'Quicksand', sans-serif;
+  }
+}
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 900px;
+  margin: 64px auto 0;
+
+  @media (max-width: 768px) {
+    gap: 32px;
+    margin-top: 40px;
+  }
+}
+
+.recipe-list li {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 16px;
+
+  &:hover {
+    background: rgba(250, 240, 230, 0.7);
+  }
+
+  @media (max-width: 768px) {
+    &:nth-child(even) {
+      background: rgba(250, 240, 230, 0.7);
+    }
+  }
+}
+
+.recipe-entry-link {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'index meta tags'
+    'index title tags';
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-areas:
+      'index meta'
+      'title title'
+      'tags tags';
+    row-gap: 4px;
+  }
+}
+
+.recipe-index {
+  grid-area: index;
+  align-self: end;
+  width: 30px;
+  height: 30px;
+  background: #F6E3CF;
+  color: #1E5515;
+  font-size: 18px;
+  font-weight: 500;
+
+  @media (max-width: 768px) {
+    align-self: center;
+  }
+}
+
+.recipe-meta {
+  grid-area: meta;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #396039;
+
+  @media (max-width: 768px) {
+    margin-bottom: 0;
+    padding-left: 0;
+  }
+}
+
+.recipe-entry-link h2 {
+  grid-area: title;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  color: #1E5515;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+}
+
+.recipe-entry-tags {
+  grid-area: tags;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+}
+
+.tag {
+  padding: 6px 12px;
+  border-radius: 30px;
+  background: rgba(57, 96, 57, 0.2);
+  color: #10310B;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+  white-space: nowrap;
+
+  &.like-tag {
+    background: rgba(57, 96, 57, 0.3);
+    font-size: 16px;
+  }
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.pagination {
+  margin-top: 40px;
+
+  button {
+    font-size: 18px;
+    color: #10310B;
+  }
+}

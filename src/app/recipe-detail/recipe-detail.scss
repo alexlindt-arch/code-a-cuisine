@@ -1021,3 +1021,468 @@ $macro-carbs-color: #D4953A;
     }
   }
 }
+
+// ===========================================================================
+// Design pass (recipe view from the Figma file): one card with a cream frame, the name and
+// nutrition in a cream box, ingredients in two columns, steps with round numbers and coloured
+// cook labels, the cookbook banner below the card. Spacing follows the design (48px inside
+// the card, 56px between card and banner) instead of stretched sections.
+// ===========================================================================
+$cream: #FAF0E6;
+$green-dark: #10310B;
+$green-middle: #1E5515;
+$green-olive: #396039;
+
+.detail-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  max-width: 1248px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+  font-family: 'Quicksand', sans-serif;
+  color: $green-dark;
+
+  // Older rules name fonts that are never loaded; the design font wins on this page.
+  :is(p, li, h1, h2, h3, h4, span, dt, dd, button, a, strong, figcaption) {
+    font-family: 'Quicksand', sans-serif;
+  }
+
+  @media (max-width: 768px) {
+    gap: 32px;
+  }
+}
+
+.recipe-card-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  padding: 40px 48px;
+  border: 4px solid $cream;
+  border-radius: 20px;
+  background-color: rgba($cream, 0.3);
+
+  @media (max-width: 768px) {
+    gap: 32px;
+    padding: 16px;
+    border-width: 2px;
+  }
+}
+
+.recipe-hero-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 48px;
+  padding: 24px;
+  border-radius: 20px;
+  background: $cream;
+
+  h1 {
+    margin: 8px 0;
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 600;
+    line-height: 1.2;
+    color: $green-middle;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding: 16px;
+  }
+}
+
+.recipe-detail-page .hero-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.meta-line,
+.cook-count {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: $green-olive;
+}
+
+.cook-count {
+  gap: 16px;
+}
+
+.hero-side {
+  flex: 0 1 380px;
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    flex-basis: auto;
+    margin-top: 0;
+  }
+}
+
+.meta-tags {
+  gap: 16px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 30px;
+  background-color: rgba($green-olive, 0.2);
+  color: $green-dark;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.nutrition {
+  gap: 8px;
+  padding: 0 0 0 8px;
+  background: transparent;
+}
+
+.nutrition-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: $green-dark;
+}
+
+.nutrition-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+
+  .nutrition-item dt {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 28px;
+  }
+
+  .nutrition-amount {
+    font-size: 20px;
+    font-weight: 500;
+  }
+}
+
+// Ingredients and directions: banner, then the content, no extra boxes.
+.panel {
+  margin: 0;
+  padding: 0;
+}
+
+.section-banner,
+.section-banner-mob {
+  margin-bottom: 24px;
+}
+
+.ingredient-columns {
+  grid-template-columns: repeat(2, minmax(0, 338px));
+  gap: 32px 80px;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 30px;
+    color: #008000;
+  }
+
+  ul {
+    padding: 0;
+    list-style: none;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 30px;
+    color: $green-dark;
+
+    @media (max-width: 768px) {
+      font-size: 18px;
+      line-height: 26px;
+    }
+  }
+}
+
+.steps-columns.has-cook-lists {
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+  gap: 40px 64px;
+  max-width: 864px;
+  margin: 0 auto;
+}
+
+.cook-list {
+  gap: 24px;
+  padding: 0;
+  border: none;
+  background-color: transparent !important;
+}
+
+// Cook label from the design: coloured chip with the chef icon.
+.cook-list-heading {
+  align-self: flex-start;
+  gap: 8px;
+  padding: 2px 8px 2px 4px;
+  border-radius: 6px;
+  background-color: #D7DFD7;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+  color: $green-dark;
+
+  &[data-cook='2'] {
+    background-color: #FFD9B3;
+  }
+
+  &[data-cook='3'] {
+    background-color: #E4DCF2;
+  }
+}
+
+.cook-list-icon {
+  width: 28px;
+}
+
+.cook-list-count {
+  margin-left: 4px;
+  font-size: 14px;
+  background-color: rgba($green-olive, 0.15);
+}
+
+// One cook: the steps fill two columns like in the design; several cooks: one column each.
+.cook-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+.steps-columns.has-cook-lists:has(> .cook-list:only-child) {
+  max-width: 864px;
+
+  .cook-steps {
+    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
+    column-gap: 64px;
+  }
+}
+
+.cook-step {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.cook-step-headline {
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  color: $green-dark;
+
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    background: $cream;
+    font-size: 18px;
+    font-weight: 500;
+  }
+}
+
+.cook-step-instruction {
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+  color: $green-dark;
+}
+
+.feedback-row {
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+
+  p {
+    font-size: 16px;
+    line-height: 20px;
+    color: $green-dark;
+  }
+
+  strong {
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+// Cookbook banner below the card.
+.cta-banner {
+  margin: 0;
+  padding: 40px 24px;
+  gap: 32px;
+  border-radius: 20px;
+  background: rgba($green-olive, 0.1);
+
+  p {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 30px;
+    color: $green-dark;
+  }
+
+  a {
+    padding: 16px 26px;
+    border-radius: 0;
+    background: $green-olive;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 30px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 24px 16px;
+    gap: 16px;
+
+    p {
+      font-size: 20px;
+      text-align: center;
+    }
+  }
+}
+
+.bottom-actions {
+  margin-top: -32px;
+}
+
+// Energy, protein, carbs and fat stay on one line next to the name, as in the design.
+@media (min-width: 769px) {
+  .hero-side {
+    flex: 0 0 auto;
+    max-width: 480px;
+  }
+
+  .nutrition-grid {
+    flex-wrap: nowrap;
+    gap: 20px;
+  }
+}
+
+// Mobile design (375px frame): 8px side margin, smaller type, compact banners.
+@media (max-width: 768px) {
+  .detail-shell {
+    gap: 40px;
+    padding: 0 8px 40px;
+  }
+
+  .recipe-card-shell {
+    gap: 40px;
+    padding: 12px 8px 32px;
+    border-width: 3px;
+    border-radius: 16px;
+    background-color: rgba($cream, 0.2);
+  }
+
+  .recipe-hero-card {
+    gap: 32px;
+    padding: 24px;
+
+    h1 {
+      font-size: 24px;
+      line-height: 30px;
+    }
+  }
+
+  .meta-line {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .nutrition-grid {
+    flex-wrap: wrap;
+    gap: 12px 24px;
+
+    .nutrition-item dt,
+    .nutrition-amount {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 22px;
+    }
+  }
+
+  .ingredient-columns {
+    h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      line-height: 22px;
+    }
+
+    ul {
+      font-size: 16px;
+      line-height: 20px;
+    }
+  }
+
+  .cook-steps {
+    gap: 32px;
+  }
+
+  .cook-step-headline {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  .cook-step-instruction {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .feedback-row {
+    justify-content: space-between;
+
+    p {
+      text-align: left;
+      font-size: 16px;
+      line-height: 20px;
+    }
+
+    strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .cta-banner {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 14px;
+    border-radius: 16px;
+
+    p {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 20px;
+      text-align: left;
+    }
+
+    a {
+      flex-shrink: 0;
+      min-height: 52px;
+      padding: 4px 16px;
+      font-size: 16px;
+      line-height: 20px;
+    }
+  }
+
+  .bottom-actions {
+    margin-top: -24px;
+  }
+}

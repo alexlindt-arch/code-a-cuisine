@@ -37,24 +37,19 @@
           <li>
             <a class="recipe-entry-link" [routerLink]="['/cookbook/recipe', recipe.id]"
               [queryParams]="{ from: detailBackPath() }">
-              <div class="recipe-entry-main">
-                <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
-                <div class="recipe-entry-wrapper">
-                  <div class="recipe-entry-title">
-                    <span class="recipe-index" aria-hidden="true">{{ pageStartIndex() + i + 1 }}.</span>
-                    <h2>{{ recipe.title }}</h2>
-
-                    <ul class="recipe-entry-tags" [attr.aria-label]="'common.recipeFacts' | t">
-                      <li class="tag">{{ i18n.label('cuisine', recipe.cuisine) }}</li>
-                      @if (recipe.dietLabel) {
-                      <li class="tag">{{ i18n.label('diet', recipe.dietLabel) }}</li>
-                      }
-                      <li class="tag">{{ i18n.label('time', recipe.difficulty) }}</li>
-                      <li class="tag like-tag"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ recipe.likes }}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+              <span class="recipe-index" aria-hidden="true">{{ pageStartIndex() + i + 1 }}.</span>
+              <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
+              <h2>{{ recipe.title }}</h2>
+              <ul class="recipe-entry-tags" [attr.aria-label]="'common.recipeFacts' | t">
+                @if (category.slug === 'all') {
+                <li class="tag">{{ i18n.label('cuisine', recipe.cuisine) }}</li>
+                }
+                @if (recipe.dietLabel) {
+                <li class="tag">{{ i18n.label('diet', recipe.dietLabel) }}</li>
+                }
+                <li class="tag">{{ i18n.label('time', recipe.difficulty) }}</li>
+                <li class="tag like-tag"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ recipe.likes }}</li>
+              </ul>
             </a>
           </li>
           }
