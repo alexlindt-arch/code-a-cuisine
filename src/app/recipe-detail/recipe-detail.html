@@ -110,8 +110,9 @@
 
         <section class="panel ingredients-panel" aria-labelledby="ingredients-heading">
           <h2 id="ingredients-heading" class="section-heading">
-            <img src="assets/img/Ingredients-section.svg" [alt]="'detail.ingredients' | t" class="section-banner">
-            <img [src]="sectionBannerMobIngredients" [alt]="'detail.ingredients' | t" class="section-banner-mob">
+            <img src="assets/img/Ingredients-section.svg" alt="" class="section-banner">
+            <img [src]="sectionBannerMobIngredients" alt="" class="section-banner-mob">
+            <span class="section-title">{{ 'detail.ingredients' | t }}</span>
           </h2>
           <div #ingredientLists id="ingredient-lists" class="ingredient-columns"
             [class.show-ingredients]="ingredientsExpanded()">
@@ -147,8 +148,9 @@
 
         <section class="panel directions-panel" aria-labelledby="directions-heading">
           <h2 id="directions-heading" class="section-heading">
-            <img src="assets/img/Directions-section.svg" [alt]="'detail.directions' | t" class="section-banner">
-            <img [src]="sectionBannerMobDirections" [alt]="'detail.directions' | t" class="section-banner-mob">
+            <img src="assets/img/Directions-section.svg" alt="" class="section-banner">
+            <img [src]="sectionBannerMobDirections" alt="" class="section-banner-mob">
+            <span class="section-title">{{ 'detail.directions' | t }}</span>
           </h2>
 
           <div #directionsList id="directions-list" class="steps-columns" [class.has-cook-lists]="hasStepDetails()"

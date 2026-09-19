@@ -1172,9 +1172,51 @@ $green-olive: #396039;
   padding: 0;
 }
 
+// The banner heading is live text on top of the artwork, so it follows the language switch;
+// container units let it scale together with the artwork. The spacing sits on the heading so
+// the percentages below refer to the artwork alone.
+.section-heading {
+  position: relative;
+  margin-bottom: 24px;
+  container-type: inline-size;
+}
+
 .section-banner,
 .section-banner-mob {
-  margin-bottom: 24px;
+  margin-bottom: 0;
+}
+
+.ingredients-panel .section-heading {
+  --title-x: 50.5%;
+  --title-y: 49.8%;
+  --title-x-mob: 50.2%;
+  --title-y-mob: 49.7%;
+}
+
+.directions-panel .section-heading {
+  --title-x: 48.7%;
+  --title-y: 60.4%;
+  --title-x-mob: 50.2%;
+  --title-y-mob: 50.8%;
+}
+
+.section-title {
+  position: absolute;
+  top: var(--title-y);
+  left: var(--title-x);
+  transform: translate(-50%, -50%);
+  color: #1E5515;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 2.71cqw;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+
+  @include mix.smartphone {
+    top: var(--title-y-mob);
+    left: var(--title-x-mob);
+    font-size: 7.32cqw;
+  }
 }
 
 .ingredient-columns {
