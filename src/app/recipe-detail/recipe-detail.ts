@@ -96,8 +96,8 @@ export class RecipeDetail {
   readonly ingredientsExpanded = signal(false);
   readonly directionsExpanded = signal(false);
   readonly heroImageArrow = 'assets/icons/Arrow-left-dark.png';
-  readonly sectionBannerMobIngredients = 'assets/img/Ingredients-Mob.svg';
-  readonly sectionBannerMobDirections = 'assets/img/Directions-Mob.svg';
+  readonly sectionBannerMobIngredients = 'assets/img/Ingredients-Mob.svg?v=2';
+  readonly sectionBannerMobDirections = 'assets/img/Directions-Mob.svg?v=2';
   readonly arrowClass = 'arrow-icon';
   readonly macroColors = macroColors;
   /** Circumference-independent length of the donut path (percent based). */
