@@ -26,24 +26,21 @@
     text-align: center;
   }
 
-  .loading-hero-image {
-    filter: brightness(0) invert(1);
-    opacity: 0.95;
-
-    @include mix.smartphone() {
-
-      margin: -61px 0;
-    }
-  }
-
-  app-images-component:has(img) {
-    overflow: hidden;
+  // The sharp header logo in the same spot as in the header, which the overlay covers.
+  .loading-logo-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 68px;
-    left: 40px;
+    max-width: var.$max-width;
+    margin: 0 auto;
+    padding: 40px;
+
+    @include mix.smartphone() {
+      padding: 12px 16px;
+    }
   }
 
   .loading-card {

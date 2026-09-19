@@ -2,8 +2,9 @@
   @if (submitState() === 'loading') {
   <div class="content-limited">
     <div class="generate-loading" role="status" aria-live="polite" aria-busy="true">
-      <app-images-component class="loading-hero-image" [class]="'hero-image'" [src]="heroImage"
-        [label]="'prefs.loadingLogo' | t"></app-images-component>
+      <div class="loading-logo-bar">
+        <app-logo role="img" [attr.aria-label]="'prefs.loadingLogo' | t"></app-logo>
+      </div>
       <div class="loading-card" aria-hidden="true">
         <img [src]="schusselIcon" alt="" />
         <img [src]="karotteIcon" alt="" />

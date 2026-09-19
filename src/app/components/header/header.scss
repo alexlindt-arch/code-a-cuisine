@@ -2,8 +2,7 @@
 @use '../../../scss/components/header' as hed;
 @use '../../../scss/abstract/mixings' as mixin;
 
-// The logo is drawn instead of loaded as a 142x48 PNG: the chef hat comes from the 512px app
-// icon used as a mask, the name is live text, so both stay sharp on high-density screens.
+// Link around the logo; the colours reach the logo through its custom properties.
 .logo {
   --logo-mark-color: #{var.$primary-text-color};
   --logo-text-color: #{var.$primary-text-color};
@@ -26,23 +25,4 @@
 .logo--dark {
   --logo-mark-color: #{var.$primary-bg};
   --logo-text-color: #10310b;
-}
-
-.logo-mark {
-  flex-shrink: 0;
-  width: 50px;
-  height: 50px;
-  background-color: var(--logo-mark-color);
-  -webkit-mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
-  mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
-}
-
-.logo-text {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 0.86;
-  letter-spacing: -0.015em;
-  color: var(--logo-text-color);
-  white-space: nowrap;
 }

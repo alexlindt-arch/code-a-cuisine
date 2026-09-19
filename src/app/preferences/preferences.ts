@@ -7,6 +7,7 @@ import { I18nService } from '../i18n/i18n.service';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { ImagesComponent } from '../components/images-component/images-component';
+import { Logo } from '../components/logo/logo';
 import { LoadingStateService } from '../loading-state.service';
 import { PreferencesQuotaService } from './preferences-quota.service';
 import { RecipeRequestService, type RequestDialogKind } from './recipe-request.service';
@@ -37,7 +38,7 @@ const DIALOG_TITLES: Record<RequestDialogKind, string> = {
 
 @Component({
   selector: 'app-preferences',
-  imports: [ImagesComponent, RouterLink, TranslatePipe],
+  imports: [ImagesComponent, Logo, RouterLink, TranslatePipe],
   templateUrl: './preferences.html',
   styleUrls: ['./preferences.scss'],
   host: { '(document:keydown.escape)': 'closeQuotaDialog()' },
@@ -180,7 +181,6 @@ export class Preferences implements OnDestroy {
   heroImageArrow = 'assets/icons/Arrow-left-dark.png';
   heroImageArrowLight = 'assets/icons/Arrow-right.png';
   arrowClass = 'arrow-icon';
-  heroImage = 'assets/img/logo-light.png';
   schusselIcon = 'assets/icons/schussel(2).png';
   loffelIcon = 'assets/icons/loffel(1).png';
   karotteIcon = 'assets/icons/karotte.png';

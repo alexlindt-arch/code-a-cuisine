@@ -1,0 +1,28 @@
+@use '../../../scss/components/variablen' as var;
+
+// The logo is drawn instead of loaded as a 142x48 PNG: the chef hat comes from the 512px app
+// icon used as a mask, the name is live text, so both stay sharp on high-density screens.
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logo-mark {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  background-color: var(--logo-mark-color, #{var.$primary-text-color});
+  -webkit-mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
+  mask: url('../../../assets/img/logo-mark.png') center / contain no-repeat;
+}
+
+.logo-text {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 0.86;
+  letter-spacing: -0.015em;
+  color: var(--logo-text-color, #{var.$primary-text-color});
+  white-space: nowrap;
+}

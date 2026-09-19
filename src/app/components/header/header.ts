@@ -9,11 +9,12 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, startWith } from 'rxjs';
 import { LoadingStateService } from '../../loading-state.service';
 import { LanguageSwitch } from '../language-switch/language-switch';
+import { Logo } from '../logo/logo';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, LanguageSwitch, TranslatePipe],
+  imports: [RouterLink, LanguageSwitch, Logo, TranslatePipe],
   providers: [],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],

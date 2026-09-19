@@ -1,8 +1,7 @@
 <header [class.header-light]="isLightHeader() || isLoading()">
   <div class="header-content">
     <a class="logo" [class.logo--dark]="isDarkLogo()" [routerLink]="'/'" [attr.aria-label]="'header.home' | t">
-      <span class="logo-mark" aria-hidden="true"></span>
-      <span class="logo-text" aria-hidden="true">Code à<br>Cuisine</span>
+      <app-logo></app-logo>
     </a>
     <app-language-switch></app-language-switch>
   </div>
