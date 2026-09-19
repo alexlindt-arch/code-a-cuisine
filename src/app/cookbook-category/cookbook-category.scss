@@ -99,8 +99,9 @@
 
 .category-banner {
   position: relative;
-
-
+  // The heading is live text on top of the banner artwork, so it follows the language switch;
+  // container units let it scale together with the artwork.
+  container-type: inline-size;
 
   img {
     width: 100%;
@@ -111,19 +112,11 @@
     filter: saturate(0.88) brightness(1.03);
   }
 
-  @include mixin.tablet {
-    img:nth-of-type(2) {
-      display: none;
-    }
-
+  img:nth-of-type(2) {
+    display: none;
   }
-    @include mixin.desktop {
-      img:nth-of-type(2) {
-        display: none;
-      }
-    }
 
-      @include mixin.smartphone {
+  @include mixin.smartphone {
     img:nth-of-type(1) {
       display: none;
     }
@@ -131,6 +124,29 @@
     img:nth-of-type(2) {
       display: block;
     }
+  }
+}
+
+.category-banner-title {
+  position: absolute;
+  top: var(--title-top, 50%);
+  left: 50%;
+  z-index: 1;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  color: #10310B;
+  font-family: 'Quicksand', sans-serif;
+  width: max-content;
+  font-size: 3.52cqw;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+
+  @include mixin.smartphone {
+    top: var(--title-top-mob, 50%);
+    color: #1E5515;
+    font-size: 5.7cqw;
   }
 }
 

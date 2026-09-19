@@ -12,8 +12,9 @@
       @if (selectedCategory(); as category) {
       <article class="category-panel" aria-labelledby="category-title">
         @if (category.banner) {
-        <header class="category-banner">
-          <h1 id="category-title" class="visually-hidden">{{ category.title | t }}</h1>
+        <header class="category-banner" [style.--title-top.%]="category.bannerTitleTop"
+          [style.--title-top-mob.%]="category.bannerTitleTopMob">
+          <h1 id="category-title" class="category-banner-title">{{ category.title | t }}</h1>
           <img [src]="category.banner" alt="">
           <img [src]="category.bannerMob ?? category.banner" alt="">
         </header>

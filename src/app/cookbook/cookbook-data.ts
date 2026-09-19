@@ -13,6 +13,9 @@ export interface CookbookCategory {
   /** Desktop banner; categories without a banner show a text heading instead. */
   banner?: string;
   bannerMob?: string;
+  /** Vertical centre of the heading on the desktop and the mobile banner, in percent of its height. */
+  bannerTitleTop?: number;
+  bannerTitleTopMob?: number;
   accent: string;
 }
 
@@ -29,6 +32,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht6.png',
     banner: 'assets/img/Italian-section.svg',
     bannerMob: 'assets/img/Italian-Mob.svg',
+    bannerTitleTop: 51.5,
+    bannerTitleTopMob: 50.3,
     accent: 'assets/icons/hand.png',
   },
   {
@@ -39,6 +44,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht1.png',
     banner: 'assets/img/German-section.svg',
     bannerMob: 'assets/img/German-Mob.svg',
+    bannerTitleTop: 47.8,
+    bannerTitleTopMob: 51.3,
     accent: 'assets/icons/brezel.png',
   },
   {
@@ -49,6 +56,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht2.png',
     banner: 'assets/img/Japanese-section.svg',
     bannerMob: 'assets/img/Japanese-Mob.svg',
+    bannerTitleTop: 47.6,
+    bannerTitleTopMob: 47.5,
     accent: 'assets/icons/stapchen.png',
   },
   {
@@ -59,6 +68,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht3.png',
     banner: 'assets/img/Gourmet-section.svg',
     bannerMob: 'assets/img/Gourmet-Mob.svg',
+    bannerTitleTop: 58.9,
+    bannerTitleTopMob: 50.3,
     accent: 'assets/icons/sterne.png',
   },
   {
@@ -69,6 +80,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht4.png',
     banner: 'assets/img/Indian-section.svg',
     bannerMob: 'assets/img/Indian-Mob.svg',
+    bannerTitleTop: 45.8,
+    bannerTitleTopMob: 49.9,
     accent: 'assets/icons/suppen.png',
   },
   {
@@ -79,6 +92,8 @@ export const cookbookCategories: CookbookCategory[] = [
     image: 'assets/img/cookboock-gericht5.png',
     banner: 'assets/img/Fusion-section.svg',
     bannerMob: 'assets/img/Fusion-Mob.svg',
+    bannerTitleTop: 47.9,
+    bannerTitleTopMob: 51.2,
     accent: 'assets/icons/spieß.png',
   },
 ];
