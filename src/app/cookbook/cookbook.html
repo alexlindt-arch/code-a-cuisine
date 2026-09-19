@@ -1,30 +1,29 @@
 <section class="cookbook-page" aria-labelledby="cookbook-title">
   <div class="content-limited">
-    <nav class="top-section" aria-label="Back to home">
-      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="'Back'" [targetPath]="''"
+    <nav class="top-section" [attr.aria-label]="'cookbook.backHome' | t">
+      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="'common.back' | t" [targetPath]="''"
         [imageArrow]="'assets/icons/Arrow-left-dark.png'"></app-routerlink-componente>
     </nav>
     <div class="cookbook-shell">
       <article class="hero-card">
         <header class="hero-copy">
-          <h1 id="cookbook-title">Cookbook</h1>
-          <p>From quick bites to gourmet delights, explore them all in our ultimate cookbook and get inspired for your
-            next culinary adventure.</p>
+          <h1 id="cookbook-title">{{ 'cookbook.title' | t }}</h1>
+          <p>{{ 'cookbook.intro' | t }}</p>
         </header>
 
         <div class="hero-favorites">
           <div class="favorites-heading">
-            <h2 id="favorites-title">Most liked recipes</h2>
+            <h2 id="favorites-title">{{ 'cookbook.mostLiked' | t }}</h2>
             <img src="assets/icons/heart.png" alt="">
           </div>
 
           @if (databaseUnavailable()) {
-          <p class="favorites-status favorites-status-error" role="status">Showing the preinstalled recipes only, the recipe database is currently unreachable.</p>
+          <p class="favorites-status favorites-status-error" role="status">{{ 'common.dbUnavailable' | t }}</p>
           }
           @if (loadingState() === 'loading') {
-          <p class="favorites-status" role="status">Loading recipes from cookbook database...</p>
+          <p class="favorites-status" role="status">{{ 'cookbook.loading' | t }}</p>
           } @else if (featuredRecipes().length === 0) {
-          <p class="favorites-status">No recipes saved in the database yet.</p>
+          <p class="favorites-status">{{ 'cookbook.noRecipes' | t }}</p>
           } @else {
           <ul class="favorite-cards" aria-labelledby="favorites-title">
             @for (recipe of featuredRecipes(); track recipe.id) {
@@ -32,9 +31,8 @@
               <a class="favorite-card" [routerLink]="['/cookbook/recipe', recipe.id]"
                 [queryParams]="{ from: '/cookbook' }">
                 <div class="recipe-image-wrapper">
-                  <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{
-                    recipe.estimatedMinutes }} min</p>
-                  <p class="likes-pill"><img src="assets/icons/heart.png" alt="Likes:"> {{ recipe.likes }}</p>
+                  <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
+                  <p class="likes-pill"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ recipe.likes }}</p>
                 </div>
                 <h3>{{ recipe.title }}</h3>
               </a>
@@ -46,15 +44,15 @@
       </article>
 
       <div class="all-recipes-action">
-        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'All recipes'"
+        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'cookbook.allRecipes' | t"
           [targetPath]="allRecipesPath" [imageArrow]="'assets/icons/Arrow-right-dark.png'"></app-routerlink-componente>
       </div>
 
-      <ul class="category-grid" aria-label="Cookbook categories">
+      <ul class="category-grid" [attr.aria-label]="'cookbook.categories' | t">
         @for (category of categories; track category.slug) {
         <li>
           <a class="category-card" [routerLink]="['/cookbook', category.slug]">
-            <h2>{{ category.title }} <img class="headlin-icon" [src]="category.accent" alt=""></h2>
+            <h2>{{ category.title | t }} <img class="headlin-icon" [src]="category.accent" alt=""></h2>
             <div class="category-description">
               <img class="category-image" [src]="category.image" alt="">
             </div>
@@ -64,7 +62,7 @@
       </ul>
 
       <footer class="bottom-actions">
-        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'Generate a recipe'"
+        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'common.generateRecipe' | t"
           [targetPath]="'/generate-recipe'" [imageArrow]="'assets/icons/Arrow-right-dark.png'"></app-routerlink-componente>
       </footer>
     </div>

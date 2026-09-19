@@ -1,6 +1,6 @@
 /**
  * @file header.ts
- * @description Global page header with the logo link; switches between dark and light style per route.
+ * @description Global page header with the logo link and the language switch; switches between dark and light style per route.
  */
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -8,10 +8,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, startWith } from 'rxjs';
 import { LoadingStateService } from '../../loading-state.service';
+import { LanguageSwitch } from '../language-switch/language-switch';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [RouterLink, LanguageSwitch, TranslatePipe],
   providers: [],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],

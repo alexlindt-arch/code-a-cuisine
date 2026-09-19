@@ -1,15 +1,15 @@
 <section class="generate-recipe" aria-labelledby="generate-recipe-title">
   <div class="content-limited">
     <header class="page-header">
-      <h1 id="generate-recipe-title">Generate recipe</h1>
-      <p>Got random stuff in your kitchen? Pop it in—we’ve got the perfect recipe waiting.</p>
+      <h1 id="generate-recipe-title">{{ 'generate.title' | t }}</h1>
+      <p>{{ 'generate.intro' | t }}</p>
     </header>
 
     <div class="card-content">
       <div class="card">
-        <form class="form" autocomplete="off" (submit)="onSubmit($event)" aria-label="Add ingredient">
+        <form class="form" autocomplete="off" (submit)="onSubmit($event)" [attr.aria-label]="'generate.formLabel' | t">
           <div class="form-group">
-            <label class="label-content" for="ingredients">Ingredients</label>
+            <label class="label-content" for="ingredients">{{ 'generate.ingredients' | t }}</label>
             <div class="ingredient-field">
               @if (ingredientValidationMessage()) {
               <p class="ingredient-validation-message" id="ingredient-hint" role="alert"
@@ -22,12 +22,12 @@
                 aria-controls="ingredient-suggestions"
                 [attr.aria-expanded]="isIngredientSuggestionsOpen() && ingredientSuggestions().length > 0"
                 [attr.aria-describedby]="ingredientValidationMessage() ? 'ingredient-hint' : null"
-                title="please only use letters, numbers, spaces, hyphens, apostrophes, or parentheses"
+                [title]="'generate.nameRules' | t"
                 [value]="ingredientsSignal().name" (input)="setIngredientName($event)"
                 (blur)="onIngredientFieldBlur($event)">
 
               @if (isIngredientSuggestionsOpen() && ingredientSuggestions().length > 0) {
-              <ul class="ingredient-suggestions" id="ingredient-suggestions" aria-label="Ingredient suggestions">
+              <ul class="ingredient-suggestions" id="ingredient-suggestions" [attr.aria-label]="'generate.suggestions' | t">
                 @for (suggestion of ingredientSuggestions(); track suggestion) {
                 <li>
                   <button type="button" (mousedown)="$event.preventDefault()"
@@ -40,38 +40,38 @@
           </div>
 
           <div class="form-group-selection">
-            <label class="label-content" for="quantity">Amount</label>
+            <label class="label-content" for="quantity">{{ 'generate.amount' | t }}</label>
             <div class="selection-content">
               <div class="number-stepper">
-                <button class="stepper-btn" type="button" aria-label="Reduce quantity"
+                <button class="stepper-btn" type="button" [attr.aria-label]="'generate.reduceQuantity' | t"
                   (click)="decrementIngredientQuantity()">-</button>
                 <input class="form-control-input" id="quantity" name="quantity" type="number" min="0.01" step="any"
                   inputmode="decimal" [attr.aria-describedby]="quantityValidationMessage() ? 'quantity-hint' : null"
                   [value]="ingredientsSignal().quantity" (input)="setIngredientQuantity($event)" placeholder="1">
-                <button class="stepper-btn" type="button" aria-label="Increase quantity"
+                <button class="stepper-btn" type="button" [attr.aria-label]="'generate.increaseQuantity' | t"
                   (click)="incrementIngredientQuantity()">+</button>
               </div>
               <div class="unit-selection custom-select" [class.open]="isCreateUnitMenuOpen()">
                 <button class="form-control-input unit-trigger" type="button"
                   aria-controls="create-unit-options" [attr.aria-expanded]="isCreateUnitMenuOpen()"
-                  [attr.aria-label]="'Unit: ' + formatUnit(ingredientsSignal().unit)" (click)="toggleCreateUnitMenu()">
+                  [attr.aria-label]="'generate.unit' | t: { unit: formatUnit(ingredientsSignal().unit) }" (click)="toggleCreateUnitMenu()">
                   {{ formatUnit(ingredientsSignal().unit) }}
                 </button>
                 <app-images-component [class]="'arrow'" [src]="arrowDropDownIcon" label=""></app-images-component>
                 @if (isCreateUnitMenuOpen()) {
-                <ul class="unit-options" id="create-unit-options" aria-label="Unit selection">
+                <ul class="unit-options" id="create-unit-options" [attr.aria-label]="'generate.unitSelection' | t">
                   @for (unit of unitOptions; track unit.id) {
                   <li>
                     <button type="button" [class.selected]="ingredientsSignal().unit === unit.id"
                       [attr.aria-pressed]="ingredientsSignal().unit === unit.id"
-                      (click)="selectCreateUnit(unit.id)">{{ unit.label }}</button>
+                      (click)="selectCreateUnit(unit.id)">{{ formatUnit(unit.id) }}</button>
                   </li>
                   }
                 </ul>
                 }
               </div>
               <div class="form-actions">
-                <button class="icon-button" type="submit" aria-label="Add ingredient">
+                <button class="icon-button" type="submit" [attr.aria-label]="'generate.add' | t">
                   <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2z"/></svg>
                 </button>
               </div>
@@ -84,39 +84,39 @@
       </div>
 
       <article class="card --ingredients" aria-labelledby="ingredients-list-title">
-        <h2 id="ingredients-list-title">List of your Ingredients</h2>
+        <h2 id="ingredients-list-title">{{ 'generate.listTitle' | t }}</h2>
         <ul class="ingredients-list">
           @for (ingredient of ingredients(); track $index) {
           <li class="ingredient-item">
             @if (editingIndex() === $index) {
             <form class="ingredient-edit-row" (submit)="onEditSubmit($event, $index)"
-              [attr.aria-label]="'Edit ' + ingredient.name">
+              [attr.aria-label]="'generate.edit' | t: { name: ingredient.name }">
               <div class="selection-content ingredient-edit-controls">
                 <div class="ingredient-edit-content">
                   <div class="number-stepper number-stepper-edit">
-                    <button class="stepper-btn" type="button" aria-label="Reduce edit quantity"
+                    <button class="stepper-btn" type="button" [attr.aria-label]="'generate.reduceEditQuantity' | t"
                       (click)="decrementEditingIngredientQuantity()">-</button>
                     <input class="form-control-input" id="edit-quantity-{{$index}}" name="edit-quantity-{{$index}}"
                       type="number" min="0.01" step="any" inputmode="decimal" required placeholder="1"
-                      [attr.aria-label]="'Quantity of ' + ingredient.name" [value]="editingIngredient().quantity"
+                      [attr.aria-label]="'generate.quantityOf' | t: { name: ingredient.name }" [value]="editingIngredient().quantity"
                       (input)="setEditingIngredientQuantity($event)">
-                    <button class="stepper-btn" type="button" aria-label="Increase edit quantity"
+                    <button class="stepper-btn" type="button" [attr.aria-label]="'generate.increaseEditQuantity' | t"
                       (click)="incrementEditingIngredientQuantity()">+</button>
                   </div>
                   <div class="unit-selection-edit custom-select-edit" [class.open]="isEditUnitMenuOpen()">
                     <button class="form-control-input unit-trigger" type="button"
                       aria-controls="edit-unit-options" [attr.aria-expanded]="isEditUnitMenuOpen()"
-                      [attr.aria-label]="'Unit: ' + formatUnit(editingIngredient().unit)" (click)="toggleEditUnitMenu()">
+                      [attr.aria-label]="'generate.unit' | t: { unit: formatUnit(editingIngredient().unit) }" (click)="toggleEditUnitMenu()">
                       {{ formatUnit(editingIngredient().unit) }}
                     </button>
                     <app-images-component [class]="'arrow'" [src]="arrowDropDownIcon" label=""></app-images-component>
                     @if (isEditUnitMenuOpen()) {
-                    <ul class="unit-options" id="edit-unit-options" aria-label="Edit unit selection">
+                    <ul class="unit-options" id="edit-unit-options" [attr.aria-label]="'generate.editUnitSelection' | t">
                       @for (unit of unitOptions; track unit.id) {
                       <li>
                         <button type="button" [class.selected]="editingIngredient().unit === unit.id"
                           [attr.aria-pressed]="editingIngredient().unit === unit.id"
-                          (click)="selectEditUnit(unit.id)">{{ unit.label }}</button>
+                          (click)="selectEditUnit(unit.id)">{{ formatUnit(unit.id) }}</button>
                       </li>
                       }
                     </ul>
@@ -125,10 +125,10 @@
                   <span class="ingredient-name">{{ ingredient.name }}</span>
                 </div>
                 <div class="button-content">
-                  <button class="icon-button" type="submit" [attr.aria-label]="'Save ' + ingredient.name">
+                  <button class="icon-button" type="submit" [attr.aria-label]="'generate.save' | t: { name: ingredient.name }">
                     <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.55 18l-5.7-5.7 1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"/></svg>
                   </button>
-                  <button class="icon-button" type="button" aria-label="Cancel editing" (click)="cancelEdit()">
+                  <button class="icon-button" type="button" [attr.aria-label]="'generate.cancelEdit' | t" (click)="cancelEdit()">
                     <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.4 19L5 17.6 10.6 12 5 6.4 6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4z"/></svg>
                   </button>
                 </div>
@@ -145,11 +145,11 @@
                 <span class="ingredient-name">{{ ingredient.name }}</span>
               </div>
               <div class="button-content">
-                <button class="icon-button" type="button" [attr.aria-label]="'Edit ' + ingredient.name"
+                <button class="icon-button" type="button" [attr.aria-label]="'generate.edit' | t: { name: ingredient.name }"
                   (click)="editIngredient($index)">
                   <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 19h1.425L16.2 9.225 14.775 7.8 5 17.575zm-2 2v-4.25L16.2 3.575q.3-.275.663-.425.362-.15.762-.15t.775.15q.375.15.65.45L20.425 5q.3.275.438.65T21 6.4q0 .4-.137.763-.138.362-.438.662L7.25 21zM19 6.4 17.6 5zm-3.525 2.125-.7-.725L16.2 9.225z"/></svg>
                 </button>
-                <button class="icon-button" type="button" [attr.aria-label]="'Delete ' + ingredient.name"
+                <button class="icon-button" type="button" [attr.aria-label]="'generate.delete' | t: { name: ingredient.name }"
                   (click)="deleteIngredient($index)">
                   <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2zM7 6v13z"/></svg>
                 </button>
@@ -158,7 +158,7 @@
             }
           </li>
           } @empty {
-          <li class="ingredients-empty">No ingredients added yet.</li>
+          <li class="ingredients-empty">{{ 'generate.empty' | t }}</li>
           }
         </ul>
       </article>
@@ -168,7 +168,7 @@
       @if (formValidationMessage()) {
       <p class="form-validation-message" role="alert">{{ formValidationMessage() }}</p>
       }
-      <button class="btn --generate-btn" type="button" (click)="goToPreferences()">Next Step</button>
+      <button class="btn --generate-btn" type="button" (click)="goToPreferences()">{{ 'generate.next' | t }}</button>
     </footer>
   </div>
 </section>

@@ -3,13 +3,14 @@
  * @description Page component where users collect the ingredients for a recipe request.
  */
 import { Component, inject } from '@angular/core';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { Router } from '@angular/router';
 import { ImagesComponent } from '../components/images-component/images-component';
 import { IngredientEditorService } from './ingredient-editor.service';
 
 @Component({
   selector: 'app-generate-recipe',
-  imports: [ImagesComponent],
+  imports: [ImagesComponent, TranslatePipe],
   templateUrl: './generate-recipe.html',
   styleUrls: ['./generate-recipe.scss'],
 })

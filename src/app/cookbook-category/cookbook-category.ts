@@ -3,6 +3,8 @@
  * @description Cookbook category page: lists the recipes of one cuisine, or all recipes, with pagination.
  */
 import { Component, computed, inject, signal } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterlinkComponente } from '../components/routerlink-componente/routerlink-componente';
@@ -20,7 +22,7 @@ const lastPageByCategory = new Map<string, number>();
 
 @Component({
   selector: 'app-cookbook-category',
-  imports: [RouterLink, RouterlinkComponente],
+  imports: [RouterLink, RouterlinkComponente, TranslatePipe],
   templateUrl: './cookbook-category.html',
   styleUrls: ['./cookbook-category.scss'],
 })
@@ -30,6 +32,7 @@ const lastPageByCategory = new Map<string, number>();
 export class CookbookCategoryPage {
   private readonly route = inject(ActivatedRoute);
   private readonly recipeLibraryService = inject(RecipeLibraryService);
+  readonly i18n = inject(I18nService);
 
   /** True when Firebase could not be read, so only the preinstalled recipes are listed. */
   readonly databaseUnavailable = this.recipeLibraryService.databaseUnavailable;
@@ -101,7 +104,7 @@ export class CookbookCategoryPage {
     const total = this.displayedRecipes().length;
     const first = total ? this.pageStartIndex() + 1 : 0;
     const last = Math.min(this.pageStartIndex() + this.pageSize, total);
-    return `Recipes ${first}–${last} of ${total}`;
+    return this.i18n.t('category.range', { first, last, total });
   });
 
   /**

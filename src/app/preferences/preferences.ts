@@ -3,11 +3,13 @@
  * @description Preferences step: portions, cooks, cooking time, cuisine and diets, quota display and recipe request.
  */
 import { Component, computed, effect, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { ImagesComponent } from '../components/images-component/images-component';
 import { LoadingStateService } from '../loading-state.service';
 import { PreferencesQuotaService } from './preferences-quota.service';
-import { CONNECTION_ERROR_MESSAGE, RecipeRequestService, type RequestDialogKind } from './recipe-request.service';
+import { RecipeRequestService, type RequestDialogKind } from './recipe-request.service';
 import { clearStoredIngredients } from '../generate-recipe/generate-recipe.utils';
 import type {
   CookingTimeId,
@@ -24,18 +26,18 @@ const FALLBACK_IP = '127.0.0.1';
 
 /** Dialog titles per dialog kind. */
 const DIALOG_TITLES: Record<RequestDialogKind, string> = {
-  notice: 'Notice',
-  limit: 'Daily limit reached',
-  throttle: 'Please wait a moment',
-  invalid: 'Request rejected',
-  blocked: 'Request blocked',
-  failed: 'Recipe generation failed',
-  connection: 'Connection failed',
+  notice: 'dialog.notice',
+  limit: 'dialog.limit',
+  throttle: 'dialog.throttle',
+  invalid: 'dialog.invalid',
+  blocked: 'dialog.blocked',
+  failed: 'dialog.failed',
+  connection: 'dialog.connection',
 };
 
 @Component({
   selector: 'app-preferences',
-  imports: [ImagesComponent, RouterLink],
+  imports: [ImagesComponent, RouterLink, TranslatePipe],
   templateUrl: './preferences.html',
   styleUrls: ['./preferences.scss'],
   host: { '(document:keydown.escape)': 'closeQuotaDialog()' },
@@ -48,6 +50,7 @@ export class Preferences implements OnDestroy {
   private readonly router = inject(Router);
   private readonly loadingStateService = inject(LoadingStateService);
   private readonly quota = inject(PreferencesQuotaService);
+  protected readonly i18n = inject(I18nService);
   private readonly requests = inject(RecipeRequestService);
   private readonly storageKey = 'cac-ingredients';
   private readonly payloadKey = 'cac-recipe-request';
@@ -74,23 +77,23 @@ export class Preferences implements OnDestroy {
   readonly isQuotaStatusLoading = this.quota.loading;
 
   readonly cookingTimeOptions: CookingTimeOption[] = [
-    { id: 'quick', label: 'Quick', hint: 'up to 20 min' },
-    { id: 'medium', label: 'Medium', hint: '20–45 min' },
-    { id: 'complex', label: 'Complex', hint: 'over 45 min' },
+    { id: 'quick', label: 'time.quick', hint: 'time.quickHint' },
+    { id: 'medium', label: 'time.medium', hint: 'time.mediumHint' },
+    { id: 'complex', label: 'time.complex', hint: 'time.complexHint' },
   ];
   readonly cuisineOptions: Option<CuisineId>[] = [
-    { id: 'german', label: 'German' },
-    { id: 'italian', label: 'Italian' },
-    { id: 'indian', label: 'Indian' },
-    { id: 'japanese', label: 'Japanese' },
-    { id: 'gourmet', label: 'Gourmet / Fine Dining' },
-    { id: 'fusion', label: 'Fusion' },
+    { id: 'german', label: 'cuisine.german' },
+    { id: 'italian', label: 'cuisine.italian' },
+    { id: 'indian', label: 'cuisine.indian' },
+    { id: 'japanese', label: 'cuisine.japanese' },
+    { id: 'gourmet', label: 'cuisine.gourmet' },
+    { id: 'fusion', label: 'cuisine.fusion' },
   ];
   readonly dietOptions: Option<DietId>[] = [
-    { id: 'vegetarian', label: 'Vegetarian' },
-    { id: 'vegan', label: 'Vegan' },
-    { id: 'keto', label: 'Keto' },
-    { id: 'none', label: 'No restrictions' },
+    { id: 'vegetarian', label: 'diet.vegetarian' },
+    { id: 'vegan', label: 'diet.vegan' },
+    { id: 'keto', label: 'diet.keto' },
+    { id: 'none', label: 'diet.none' },
   ];
 
   /**
@@ -120,16 +123,16 @@ export class Preferences implements OnDestroy {
       return 'Generating...';
     }
     if (this.isQuotaStatusLoading()) {
-      return 'Checking daily limit...';
+      return this.i18n.t('prefs.checkingLimit');
     }
-    return this.canSubmitRecipe() ? 'Generate a recipe' : 'Ups! Not quite enough...';
+    return this.i18n.t(this.canSubmitRecipe() ? 'prefs.generate' : 'prefs.notEnough');
   });
 
   /**
    * Title of the quota/error dialog.
    * @returns The title for the current dialog kind.
    */
-  readonly quotaDialogTitle = computed(() => DIALOG_TITLES[this.quotaDialogKind()]);
+  readonly quotaDialogTitle = computed(() => this.i18n.t(DIALOG_TITLES[this.quotaDialogKind()]));
 
   /**
    * Message of the quota/error dialog, preferring the message sent by the server.
@@ -141,12 +144,12 @@ export class Preferences implements OnDestroy {
       return message;
     }
     if (this.quotaDialogKind() === 'connection') {
-      return CONNECTION_ERROR_MESSAGE;
+      return this.i18n.t('error.connection');
     }
     if (this.quotaDialogKind() === 'limit') {
       return this.quota.buildDailyMessage(this.localUsage());
     }
-    return 'Please check your recipe request.';
+    return this.i18n.t('prefs.checkRequest');
   });
 
   /**
@@ -159,7 +162,7 @@ export class Preferences implements OnDestroy {
       return null;
     }
     const minutes = Math.ceil(this.quota.getResetMs(this.ip()) / 60000);
-    return minutes > 0 ? `Reset in ${Math.floor(minutes / 60)}h ${minutes % 60}m.` : null;
+    return minutes > 0 ? this.i18n.t('prefs.resetIn', { hours: Math.floor(minutes / 60), minutes: minutes % 60 }) : null;
   });
 
   /**
@@ -424,9 +427,11 @@ export class Preferences implements OnDestroy {
       this.quota.exceeded.set(true);
     }
 
-    const message = details.message
-      ?? (kind === 'limit' ? this.quota.buildDailyMessage(this.localUsage(), details.quota ?? this.quotaStatus()) : null)
-      ?? (kind === 'connection' ? CONNECTION_ERROR_MESSAGE : this.requests.toErrorMessage(error));
+    // A limit without any server explanation gets the local daily message; everything else is
+    // translated by error code into the chosen language.
+    const message = kind === 'limit' && !details.code && !details.message
+      ? this.quota.buildDailyMessage(this.localUsage(), details.quota ?? this.quotaStatus())
+      : this.requests.toErrorMessage(error);
     this.quota.details.set(details.errors);
     this.openDialog(kind, message);
     localStorage.setItem(this.errorKey, message);

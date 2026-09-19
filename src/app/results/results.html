@@ -5,30 +5,26 @@
 
       <header class="results-hero">
         <div class="hero-content">
-          <h1 id="results-title">The recipe results</h1>
+          <h1 id="results-title">{{ 'results.title' | t }}</h1>
           <figure class="hero-image-wrap --mobile">
             <img [src]="getHeroImage()" alt="" class="hero-image">
           </figure>
-          <p class="results-copy">
-            We took what you have and let our AI do the thinking.
-            Here are {{ recipes().length }} easy recipes you can make right now.
-          </p>
+          <p class="results-copy">{{ 'results.copy' | t: { count: recipes().length } }}</p>
 
           @if (requestPayload(); as request) {
-          <ul class="result-tags" aria-label="Your preferences">
-            <li class="tag">{{ request.preferences.cuisine }}</li>
-            <li class="tag">{{ request.preferences.cookingTime }}</li>
+          <ul class="result-tags" [attr.aria-label]="'results.preferences' | t">
+            <li class="tag">{{ i18n.label('cuisine', request.preferences.cuisine) }}</li>
+            <li class="tag">{{ i18n.label('time', request.preferences.cookingTime) }}</li>
           </ul>
           }
 
           <div role="status" aria-live="polite">
             @if (persistenceState() === 'saving') {
-            <p class="persistence-note">Saving these recipes to the cookbook database...</p>
+            <p class="persistence-note">{{ 'results.saving' | t }}</p>
             } @else if (persistenceState() === 'saved') {
-            <p class="persistence-note persistence-note-success">Saved to the cookbook database.</p>
+            <p class="persistence-note persistence-note-success">{{ 'results.saved' | t }}</p>
             } @else if (persistenceState() === 'error') {
-            <p class="persistence-note persistence-note-error">The recipes were generated, but saving them to the
-              database failed.</p>
+            <p class="persistence-note persistence-note-error">{{ 'results.saveFailed' | t }}</p>
             }
           </div>
         </div>
@@ -37,51 +33,51 @@
         </figure>
       </header>
 
-      <ol class="result-grid" aria-label="Generated recipes">
+      <ol class="result-grid" [attr.aria-label]="'results.list' | t">
         @for (recipe of recipes(); track $index; let i = $index) {
         <li class="result-grid-item">
           <article class="recipe-card" [attr.aria-labelledby]="'recipe-card-title-' + i">
-            <p class="recipe-index"><img [src]="getRecipeCardIcon()" alt=""> Recipe {{ i + 1 }}</p>
+            <p class="recipe-index"><img [src]="getRecipeCardIcon()" alt=""> {{ 'results.recipe' | t: { number: i + 1 } }}</p>
             <h2 [id]="'recipe-card-title-' + i">{{ recipe.title }}</h2>
             <ul class="recipe-facts">
               <li class="recipe-time">
-                <img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{ recipe.estimatedMinutes }} min
+                <img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}
               </li>
               @if (cuisineLabel(); as cuisine) {
-              <li class="recipe-cuisine">Cuisine: {{ cuisine }}</li>
+              <li class="recipe-cuisine">{{ 'results.cuisine' | t: { cuisine: cuisine } }}</li>
               }
               @if (requestPayload()?.preferences?.portions; as portions) {
-              <li class="recipe-cuisine">Portions: {{ portions }}</li>
+              <li class="recipe-cuisine">{{ 'results.portions' | t: { portions: portions } }}</li>
               }
               <li class="recipe-extras">
                 @if (recipe.extraIngredients?.length) {
-                Also needed: {{ recipe.extraIngredients!.join(', ') }}
+                {{ 'results.alsoNeeded' | t: { items: recipe.extraIngredients!.join(', ') } }}
                 } @else {
-                Uses only your ingredients
+                {{ 'results.onlyYours' | t }}
                 }
               </li>
             </ul>
             <a class="view-btn" [routerLink]="['/results', i]" [queryParams]="{ from: '/results' }"
-              [attr.aria-label]="'View recipe: ' + recipe.title">View</a>
+              [attr.aria-label]="'results.viewLabel' | t: { title: recipe.title }">{{ 'results.view' | t }}</a>
           </article>
         </li>
         }
       </ol>
-      <nav class="bottom-actions" aria-label="Next steps">
-        <app-routerlink-componente [targetClass]="'--light'" [linkText]="'Generate new recipe'"
+      <nav class="bottom-actions" [attr.aria-label]="'results.nextSteps' | t">
+        <app-routerlink-componente [targetClass]="'--light'" [linkText]="'results.new' | t"
           [targetPath]="'/generate-recipe'"></app-routerlink-componente>
       </nav>
       } @else {
       <div class="empty-state">
-        <h1 id="results-title">No results yet</h1>
+        <h1 id="results-title">{{ 'results.emptyTitle' | t }}</h1>
         @if (generationError(); as error) {
         <p>{{ error }}</p>
         } @else if (hasStoredResponse()) {
-        <p>Something went wrong while reading your recipes. Please generate them again.</p>
+        <p>{{ 'results.parseError' | t }}</p>
         } @else {
-        <p>Generate a recipe first. Your three recipe ideas will appear here.</p>
+        <p>{{ 'results.emptyText' | t }}</p>
         }
-        <a [routerLink]="'/preferences'" class="view-btn empty-link">Back to preferences</a>
+        <a [routerLink]="'/preferences'" class="view-btn empty-link">{{ 'results.backToPrefs' | t }}</a>
       </div>
       }
     </div>

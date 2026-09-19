@@ -51,6 +51,7 @@ export type MacroKey = 'protein' | 'carbs' | 'fat';
 /** One macro nutrient row with grams, energy and its share of the macro energy sum. */
 export interface MacroRow {
   key: MacroKey;
+  /** Text key of the nutrient name (e.g. 'detail.protein'). */
   label: string;
   grams: number;
   kcal: number;
@@ -67,10 +68,11 @@ export const KCAL_PER_GRAM: Record<MacroKey, number> = {
   fat: 9,
 };
 
+/** Text keys of the macro nutrient names, translated in the template. */
 const macroLabels: Record<MacroKey, string> = {
-  protein: 'Protein',
-  carbs: 'Carbs',
-  fat: 'Fat',
+  protein: 'detail.protein',
+  carbs: 'detail.carbs',
+  fat: 'detail.fat',
 };
 
 const ingredientSynonymGroups = [

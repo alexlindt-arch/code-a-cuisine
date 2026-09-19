@@ -3,6 +3,7 @@
  * @description Unit tests for the preferences page.
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { I18nService } from '../i18n/i18n.service';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -62,8 +63,13 @@ describe('Preferences', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show the cooking time hints', () => {
-    expect(component.cookingTimeOptions.map((option) => option.hint)).toEqual(['up to 20 min', '20–45 min', 'over 45 min']);
+  it('should show the cooking time hints in both languages', () => {
+    const i18n = TestBed.inject(I18nService);
+    i18n.setLanguage('en');
+    expect(component.cookingTimeOptions.map((option) => i18n.t(option.hint))).toEqual(['up to 20 min', '20–45 min', 'over 45 min']);
+    i18n.setLanguage('de');
+    expect(component.cookingTimeOptions.map((option) => i18n.t(option.hint))).toEqual(['bis 20 Min.', '20–45 Min.', 'über 45 Min.']);
+    i18n.setLanguage('en');
   });
 
   it('should reset other diets when "No restrictions" is selected', () => {

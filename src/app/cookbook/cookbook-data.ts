@@ -24,8 +24,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'Italian',
     cuisine: 'Italian',
-    title: 'Italian cuisine',
-    description: 'Sun-soaked pasta, vibrant sauces and warm comfort classics.',
+    title: 'category.italian.title',
+    description: 'category.italian.description',
     image: 'assets/img/cookboock-gericht6.png',
     banner: 'assets/img/Italian-section.svg',
     bannerMob: 'assets/img/Italian-Mob.svg',
@@ -34,8 +34,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'German',
     cuisine: 'German',
-    title: 'German cuisine',
-    description: 'Hearty plates, familiar flavors and rich home-style cooking.',
+    title: 'category.german.title',
+    description: 'category.german.description',
     image: 'assets/img/cookboock-gericht1.png',
     banner: 'assets/img/German-section.svg',
     bannerMob: 'assets/img/German-Mob.svg',
@@ -44,8 +44,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'Japanese',
     cuisine: 'Japanese',
-    title: 'Japanese cuisine',
-    description: 'Clean compositions, careful technique and precise balance.',
+    title: 'category.japanese.title',
+    description: 'category.japanese.description',
     image: 'assets/img/cookboock-gericht2.png',
     banner: 'assets/img/Japanese-section.svg',
     bannerMob: 'assets/img/Japanese-Mob.svg',
@@ -54,8 +54,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'Gourmet',
     cuisine: 'Gourmet',
-    title: 'Gourmet cuisine',
-    description: 'Plated elegance with restaurant-inspired combinations.',
+    title: 'category.gourmet.title',
+    description: 'category.gourmet.description',
     image: 'assets/img/cookboock-gericht3.png',
     banner: 'assets/img/Gourmet-section.svg',
     bannerMob: 'assets/img/Gourmet-Mob.svg',
@@ -64,8 +64,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'Indian',
     cuisine: 'Indian',
-    title: 'Indian cuisine',
-    description: 'Aromatic spice layers, cozy bowls and bold depth.',
+    title: 'category.indian.title',
+    description: 'category.indian.description',
     image: 'assets/img/cookboock-gericht4.png',
     banner: 'assets/img/Indian-section.svg',
     bannerMob: 'assets/img/Indian-Mob.svg',
@@ -74,8 +74,8 @@ export const cookbookCategories: CookbookCategory[] = [
   {
     slug: 'Fusion',
     cuisine: 'Fusion',
-    title: 'Fusion cuisine',
-    description: 'Unexpected pairings that still feel thoughtful and complete.',
+    title: 'category.fusion.title',
+    description: 'category.fusion.description',
     image: 'assets/img/cookboock-gericht5.png',
     banner: 'assets/img/Fusion-section.svg',
     bannerMob: 'assets/img/Fusion-Mob.svg',
@@ -87,8 +87,8 @@ export const cookbookCategories: CookbookCategory[] = [
 export const allRecipesCategory: CookbookCategory = {
   slug: ALL_RECIPES_SLUG,
   cuisine: 'All',
-  title: 'All recipes',
-  description: 'Every recipe generated with Code à Cuisine, newest first.',
+  title: 'category.all.title',
+  description: 'category.all.description',
   image: 'assets/img/cookboock-gericht5.png',
   accent: 'assets/icons/heart.png',
 };

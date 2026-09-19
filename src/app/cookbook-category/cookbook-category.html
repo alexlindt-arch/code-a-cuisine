@@ -1,36 +1,36 @@
 <section class="cookbook-category-page" aria-labelledby="category-title">
   <div class="content-limited">
-    <nav class="top-section" aria-label="Back to cookbook">
-      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="'Cookbook'" [targetPath]="'/cookbook'"
+    <nav class="top-section" [attr.aria-label]="'category.backToCookbook' | t">
+      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="'common.cookbook' | t" [targetPath]="'/cookbook'"
         [imageArrow]="'assets/icons/Arrow-left-dark.png'"></app-routerlink-componente>
     </nav>
 
     <div class="category-shell">
       <div class="generate-recipe-content">
-        <a [routerLink]="'/generate-recipe'" class="generate-button">Generate a recipe</a>
+        <a [routerLink]="'/generate-recipe'" class="generate-button">{{ 'common.generateRecipe' | t }}</a>
       </div>
       @if (selectedCategory(); as category) {
       <article class="category-panel" aria-labelledby="category-title">
         @if (category.banner) {
         <header class="category-banner">
-          <h1 id="category-title" class="visually-hidden">{{ category.title }}</h1>
+          <h1 id="category-title" class="visually-hidden">{{ category.title | t }}</h1>
           <img [src]="category.banner" alt="">
           <img [src]="category.bannerMob ?? category.banner" alt="">
         </header>
         } @else {
         <header class="category-intro">
-          <h1 id="category-title">{{ category.title }}</h1>
-          <p>{{ category.description }}</p>
+          <h1 id="category-title">{{ category.title | t }}</h1>
+          <p>{{ category.description | t }}</p>
         </header>
         }
 
         @if (databaseUnavailable()) {
-        <p class="category-status category-status-error" role="status">Showing the preinstalled recipes only, the recipe database is currently unreachable.</p>
+        <p class="category-status category-status-error" role="status">{{ 'common.dbUnavailable' | t }}</p>
         }
         @if (loadingState() === 'loading') {
-        <p class="category-status" role="status">Loading category recipes from database...</p>
+        <p class="category-status" role="status">{{ 'category.loading' | t }}</p>
         } @else if (displayedRecipes().length === 0) {
-        <p class="category-status">No recipes saved in this category yet.</p>
+        <p class="category-status">{{ 'category.empty' | t }}</p>
         } @else {
         <ol class="recipe-list" [attr.start]="pageStartIndex() + 1">
           @for (recipe of visibleRecipes(); track recipe.id; let i = $index) {
@@ -38,20 +38,19 @@
             <a class="recipe-entry-link" [routerLink]="['/cookbook/recipe', recipe.id]"
               [queryParams]="{ from: detailBackPath() }">
               <div class="recipe-entry-main">
-                <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{
-                  recipe.estimatedMinutes }} min</p>
+                <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
                 <div class="recipe-entry-wrapper">
                   <div class="recipe-entry-title">
                     <span class="recipe-index" aria-hidden="true">{{ pageStartIndex() + i + 1 }}.</span>
                     <h2>{{ recipe.title }}</h2>
 
-                    <ul class="recipe-entry-tags" aria-label="Recipe facts">
-                      <li class="tag">{{ formatCuisine(recipe.cuisine) }}</li>
+                    <ul class="recipe-entry-tags" [attr.aria-label]="'common.recipeFacts' | t">
+                      <li class="tag">{{ i18n.label('cuisine', recipe.cuisine) }}</li>
                       @if (recipe.dietLabel) {
-                      <li class="tag">{{ recipe.dietLabel }}</li>
+                      <li class="tag">{{ i18n.label('diet', recipe.dietLabel) }}</li>
                       }
-                      <li class="tag">{{ recipe.difficulty }}</li>
-                      <li class="tag like-tag"><img src="assets/icons/heart.png" alt="Likes:"> {{ recipe.likes }}</li>
+                      <li class="tag">{{ i18n.label('time', recipe.difficulty) }}</li>
+                      <li class="tag like-tag"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ recipe.likes }}</li>
                     </ul>
                   </div>
                 </div>
@@ -62,16 +61,16 @@
         </ol>
 
         @if (totalPages() > 1) {
-        <nav class="pagination" aria-label="Recipe pages">
+        <nav class="pagination" [attr.aria-label]="'category.pages' | t">
           <button type="button" class="page-nav" (click)="goToPreviousPage()" [disabled]="!hasPreviousPage()"
-            aria-label="Previous page">&lt;</button>
+            [attr.aria-label]="'category.previous' | t">&lt;</button>
           @for (pageNumber of pageNumbers(); track pageNumber) {
           <button type="button" [class.active]="currentPage() === pageNumber"
             [attr.aria-current]="currentPage() === pageNumber ? 'page' : null"
-            [attr.aria-label]="'Page ' + pageNumber" (click)="selectPage(pageNumber)">{{ pageNumber }}</button>
+            [attr.aria-label]="'category.page' | t: { number: pageNumber }" (click)="selectPage(pageNumber)">{{ pageNumber }}</button>
           }
           <button type="button" class="page-nav" (click)="goToNextPage()" [disabled]="!hasNextPage()"
-            aria-label="Next page">&gt;</button>
+            [attr.aria-label]="'category.next' | t">&gt;</button>
         </nav>
         }
         <p class="pagination-status">{{ paginationLabel() }}</p>
@@ -79,9 +78,9 @@
       </article>
       } @else {
       <article class="empty-panel" aria-labelledby="category-title">
-        <h1 id="category-title">Category not found</h1>
-        <p>Select a cookbook category first.</p>
-        <a [routerLink]="'/cookbook'">Back to cookbook</a>
+        <h1 id="category-title">{{ 'category.notFoundTitle' | t }}</h1>
+        <p>{{ 'category.notFoundText' | t }}</p>
+        <a [routerLink]="'/cookbook'">{{ 'category.backToCookbook' | t }}</a>
       </article>
       }
     </div>

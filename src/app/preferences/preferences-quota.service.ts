@@ -3,6 +3,7 @@
  * @description Quota state of the preferences page: server quota, local usage, dialog and summary text.
  */
 import { Injectable, inject, signal } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
 import type { QuotaStatus } from './preferences.models';
 import { LocalQuotaService } from './local-quota.service';
 import type { RequestDialogKind } from './recipe-request.service';
@@ -52,6 +53,7 @@ export function msUntilServerMidnight(referenceMs = Date.now()): number {
 @Injectable({ providedIn: 'root' })
 export class PreferencesQuotaService {
   private readonly localQuota = inject(LocalQuotaService);
+  protected readonly i18n = inject(I18nService);
   private readonly serverQuotaKey = 'cac-last-server-quota';
 
   readonly status = signal<QuotaStatus | null>(null);
@@ -198,11 +200,11 @@ export class PreferencesQuotaService {
    */
   buildSummaryText(ip: string): string {
     const summary = this.buildRemainingSummary(ip);
-    const ipText = `${summary.perIpRemaining} of ${summary.perIpLimit} left today for your IP`;
+    const ipText = this.i18n.t('quota.summaryIp', { remaining: summary.perIpRemaining, limit: summary.perIpLimit });
     if (summary.globalRemaining === null || summary.globalLimit === null) {
       return ipText;
     }
-    return `${ipText} · ${summary.globalRemaining} of ${summary.globalLimit} left in the app today`;
+    return `${ipText} · ${this.i18n.t('quota.summaryGlobal', { remaining: summary.globalRemaining, limit: summary.globalLimit })}`;
   }
 
   /**
@@ -213,11 +215,11 @@ export class PreferencesQuotaService {
    */
   buildDailyMessage(usage: number, quota: QuotaStatus | null = this.status()): string {
     if (quota && quota.globalRemaining <= 0 && quota.perIpRemaining > 0) {
-      return `All ${quota.globalLimit} recipe generations of the app are used up for today. Please try again tomorrow.`;
+      return this.i18n.t('quota.globalUsedUp', { limit: quota.globalLimit });
     }
     const used = Math.max(usage, quota?.perIpUsed ?? 0);
     const limit = quota?.perIpLimit ?? this.getLimit();
-    return `Daily limit reached: ${Math.min(used, limit)} of ${limit} recipe generations have been used today. Please try again tomorrow.`;
+    return this.i18n.t('quota.dailyReached', { used: Math.min(used, limit), limit });
   }
 
   /**

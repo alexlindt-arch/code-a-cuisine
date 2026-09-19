@@ -3,6 +3,7 @@
  * @description Sends recipe requests to the n8n webhook and interprets its error responses.
  */
 import { Injectable, inject } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -26,18 +27,13 @@ export interface ApiErrorDetails {
  */
 const REQUEST_TIMEOUT_MS = 180_000;
 
-/** Message shown when the webhook did not answer within REQUEST_TIMEOUT_MS. */
-export const TIMEOUT_ERROR_MESSAGE = 'Generating your recipes took too long. Please try again.';
-
-/** Fallback text when the webhook cannot be reached at all. */
-export const CONNECTION_ERROR_MESSAGE = 'The recipe API is currently unavailable. Please try again in a few minutes.';
-
 /**
  * Posts recipe requests to the n8n webhook and maps its error responses to messages and dialog kinds.
  */
 @Injectable({ providedIn: 'root' })
 export class RecipeRequestService {
   private readonly http = inject(HttpClient);
+  protected readonly i18n = inject(I18nService);
   private readonly webhookPath = environment.recipeWebhookUrl;
 
   /**
@@ -98,22 +94,26 @@ export class RecipeRequestService {
    */
   toErrorMessage(error: unknown): string {
     if (error instanceof TimeoutError) {
-      return TIMEOUT_ERROR_MESSAGE;
+      return this.i18n.t('error.timeout');
     }
     const details = this.readApiError(error);
+    // Known server codes get the text of the chosen language; other server texts are shown as sent.
+    if (details.code && this.i18n.t(`error.${details.code}`) !== `error.${details.code}`) {
+      return this.i18n.t(`error.${details.code}`);
+    }
     if (details.message) {
       return details.message;
     }
     if (details.status === 0) {
-      return CONNECTION_ERROR_MESSAGE;
+      return this.i18n.t('error.connection');
     }
     if (details.status === 404) {
-      return 'Webhook not found (404). Verify the configured recipe webhook URL and that the n8n workflow is active.';
+      return this.i18n.t('error.notFound');
     }
     if (details.status !== null) {
       return this.getStatusFallbackMessage(details.status);
     }
-    return this.extractErrorText(error).trim() || 'The recipe request failed. Please try again later.';
+    return this.i18n.t('error.generic');
   }
 
   /**
@@ -222,12 +222,12 @@ export class RecipeRequestService {
    */
   private getStatusFallbackMessage(status: number): string {
     if (status === 429) {
-      return 'Too many requests. Please try again later.';
+      return this.i18n.t('error.tooMany');
     }
     if (status === 400) {
-      return 'The recipe request was rejected. Please check your ingredients and preferences.';
+      return this.i18n.t('error.rejected');
     }
-    return `The recipe request failed (${status}). Please try again later.`;
+    return this.i18n.t('error.status', { status });
   }
 
   /**

@@ -1,0 +1,7 @@
+<div class="language-switch" role="group" [attr.aria-label]="'lang.switch' | t">
+  @for (language of languages; track language.id) {
+  <button type="button" class="language-option" [class.is-active]="i18n.language() === language.id"
+    [attr.aria-pressed]="i18n.language() === language.id" [attr.lang]="language.id"
+    [attr.aria-label]="language.nameKey | t" (click)="select(language.id)">{{ language.short }}</button>
+  }
+</div>

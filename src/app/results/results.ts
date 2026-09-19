@@ -3,6 +3,8 @@
  * @description Results page: shows the generated recipes and saves them to the cookbook database.
  */
 import { Component, computed, OnDestroy, signal } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
 import { RecipeLibraryService, type StoredRecipeRequestPayload, type StoredRecipeResult } from '../recipe-library.service';
@@ -16,7 +18,7 @@ type Recipe = StoredRecipeResult;
 
 @Component({
   selector: 'app-results',
-  imports: [ RouterLink, RouterlinkComponente],
+  imports: [ RouterLink, RouterlinkComponente, TranslatePipe],
   templateUrl: './results.html',
   styleUrls: ['./results.scss'],
 })
@@ -32,6 +34,7 @@ export class Results implements OnDestroy {
   private readonly savedRecipeIdsKey = 'cac-saved-recipe-ids';
   private readonly router = inject(Router);
   private readonly recipeLibraryService = inject(RecipeLibraryService);
+  readonly i18n = inject(I18nService);
   private savedNoticeTimeoutId: ReturnType<typeof window.setTimeout> | null = null;
 
   readonly recipes = signal<Recipe[]>([]);
@@ -52,8 +55,7 @@ export class Results implements OnDestroy {
       return null;
     }
 
-    const trimmed = cuisine.trim();
-    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    return this.i18n.label('cuisine', cuisine);
   });
 
   /**

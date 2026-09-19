@@ -1,8 +1,8 @@
-<section class="recipe-detail-page" aria-label="Recipe details">
+<section class="recipe-detail-page" [attr.aria-label]="'detail.page' | t">
 
-  <nav class="top-section" aria-label="Back">
+  <nav class="top-section" [attr.aria-label]="'detail.back' | t">
     <div class="content-limited">
-      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="backLinkLabel()" [targetPath]="backLink()"
+      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="backLinkLabel() | t" [targetPath]="backLink()"
         [imageArrow]="'assets/icons/Arrow-left-dark.png'"></app-routerlink-componente>
     </div>
   </nav>
@@ -13,18 +13,17 @@
       <article class="recipe-card-shell" aria-labelledby="recipe-title">
         <div class="recipe-hero-card">
           <header class="hero-main">
-            <p class="meta-line"><img src="assets/icons/clock_Icon.png" alt=""> Cooking time: {{
-              recipe.estimatedMinutes }} min</p>
+            <p class="meta-line"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
             <h1 id="recipe-title">{{ recipe.title }}</h1>
             @if (requestPayload(); as request) {
-            <p class="cook-count">Cooking person: {{ request.preferences.cooks }}
+            <p class="cook-count">{{ 'detail.cookingPersons' | t: { count: request.preferences.cooks } }}
               @for (chef of cookIconIndexes(); track chef) {
-              <span class="chef-badge"><img [src]="getCookIcon(chef)" [alt]="'Cook ' + chef"></span>
+              <span class="chef-badge"><img [src]="getCookIcon(chef)" [alt]="'common.cook' | t: { number: chef }"></span>
               }
             </p>
             <ul class="cook-icons" aria-hidden="true">
               @for (chef of cookIconIndexes(); track chef) {
-              <li><img class="--mobil" [src]="getCookIcon(chef)" [alt]="'Cook ' + chef"></li>
+              <li><img class="--mobil" [src]="getCookIcon(chef)" [alt]="'common.cook' | t: { number: chef }"></li>
               }
             </ul>
             }
@@ -32,42 +31,42 @@
 
           <div class="hero-side">
             @if (requestPayload(); as request) {
-            <ul class="meta-tags" aria-label="Recipe facts">
-              <li class="tag">{{ request.preferences.cuisine }}</li>
-              <li class="tag">{{ request.preferences.cookingTime }}</li>
-              <li class="tag">{{ request.preferences.portions }} {{ request.preferences.portions === 1 ? 'portion' : 'portions' }}</li>
-              <li class="tag"><img src="assets/icons/heart.png" alt="Likes:"> {{ displayedLikes() }}</li>
+            <ul class="meta-tags" [attr.aria-label]="'common.recipeFacts' | t">
+              <li class="tag">{{ i18n.label('cuisine', request.preferences.cuisine) }}</li>
+              <li class="tag">{{ i18n.label('time', request.preferences.cookingTime) }}</li>
+              <li class="tag">{{ request.preferences.portions }} {{ (request.preferences.portions === 1 ? 'detail.portion' : 'detail.portionsWord') | t }}</li>
+              <li class="tag"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ displayedLikes() }}</li>
             </ul>
             }
 
             <section class="nutrition" aria-labelledby="nutrition-title">
-              <h2 id="nutrition-title" class="nutrition-title">Nutritional information</h2>
+              <h2 id="nutrition-title" class="nutrition-title">{{ 'detail.nutrition' | t }}</h2>
 
               @if (nutritionFacts(); as facts) {
-              <div class="nutrition-toggle" role="group" aria-label="Show nutrition values">
+              <div class="nutrition-toggle" role="group" [attr.aria-label]="'detail.showNutrition' | t">
                 <button type="button" class="nutrition-toggle-btn" [class.is-active]="nutritionView() === 'perPortion'"
                   [attr.aria-pressed]="nutritionView() === 'perPortion'" (click)="setNutritionView('perPortion')">
-                  Per portion
+                  {{ 'detail.perPortion' | t }}
                 </button>
                 <button type="button" class="nutrition-toggle-btn" [class.is-active]="nutritionView() === 'total'"
                   [attr.aria-pressed]="nutritionView() === 'total'" (click)="setNutritionView('total')">
-                  Whole recipe
+                  {{ 'detail.wholeRecipe' | t }}
                 </button>
               </div>
 
-              <p class="nutrition-scope" aria-live="polite">Values {{ nutritionViewLabel() }}</p>
+              <p class="nutrition-scope" aria-live="polite">{{ 'detail.values' | t: { scope: nutritionViewLabel() } }}</p>
 
               <dl class="nutrition-grid">
                 <div class="nutrition-item">
-                  <dt>Energy</dt>
+                  <dt>{{ 'detail.energy' | t }}</dt>
                   <dd><span class="nutrition-amount">{{ facts.calories }} kcal</span></dd>
                 </div>
                 @for (row of facts.rows; track row.key) {
                 <div class="nutrition-item">
-                  <dt>{{ row.label }}</dt>
+                  <dt>{{ row.label | t }}</dt>
                   <dd>
                     <span class="nutrition-amount">{{ row.grams }} g</span>
-                    <span class="nutrition-share">{{ row.percent }}% of energy</span>
+                    <span class="nutrition-share">{{ 'detail.ofEnergy' | t: { percent: row.percent } }}</span>
                   </dd>
                 </div>
                 }
@@ -87,23 +86,23 @@
                   <text class="macro-donut-unit" x="60" y="76" text-anchor="middle" aria-hidden="true">kcal</text>
                 </svg>
                 } @else {
-                <p class="macro-chart-empty">No macro nutrient energy to chart.</p>
+                <p class="macro-chart-empty">{{ 'detail.noMacros' | t }}</p>
                 }
                 <figcaption class="macro-chart-caption">
-                  <span class="macro-chart-title">Energy from macros</span>
+                  <span class="macro-chart-title">{{ 'detail.energyFromMacros' | t }}</span>
                   <ul class="macro-legend">
                     @for (row of facts.rows; track row.key) {
                     <li>
                       <span class="macro-swatch" [style.background-color]="macroColors[row.key]"
                         aria-hidden="true"></span>
-                      {{ row.label }} {{ row.percent }}%
+                      {{ row.label | t }} {{ row.percent }}%
                     </li>
                     }
                   </ul>
                 </figcaption>
               </figure>
               } @else {
-              <p class="nutrition-unavailable">Nutritional information is not available for this recipe.</p>
+              <p class="nutrition-unavailable">{{ 'detail.noNutrition' | t }}</p>
               }
             </section>
           </div>
@@ -111,13 +110,13 @@
 
         <section class="panel ingredients-panel" aria-labelledby="ingredients-heading">
           <h2 id="ingredients-heading" class="section-heading">
-            <img src="assets/img/Ingredients-section.svg" alt="Ingredients" class="section-banner">
-            <img [src]="sectionBannerMobIngredients" alt="Ingredients" class="section-banner-mob">
+            <img src="assets/img/Ingredients-section.svg" [alt]="'detail.ingredients' | t" class="section-banner">
+            <img [src]="sectionBannerMobIngredients" [alt]="'detail.ingredients' | t" class="section-banner-mob">
           </h2>
           <div #ingredientLists id="ingredient-lists" class="ingredient-columns"
             [class.show-ingredients]="ingredientsExpanded()">
             <section class="ingredient-group" aria-labelledby="your-ingredients-heading">
-              <h3 id="your-ingredients-heading">Your ingredients</h3>
+              <h3 id="your-ingredients-heading">{{ 'detail.yourIngredients' | t }}</h3>
               @if (ingredientColumns().left.length) {
               <ul>
                 @for (ingredient of ingredientColumns().left; track $index) {
@@ -125,11 +124,11 @@
                 }
               </ul>
               } @else {
-              <p class="empty-note">None of your ingredients are listed.</p>
+              <p class="empty-note">{{ 'detail.noneListed' | t }}</p>
               }
             </section>
             <section class="ingredient-group" aria-labelledby="extra-ingredients-heading">
-              <h3 id="extra-ingredients-heading">Extra ingredients</h3>
+              <h3 id="extra-ingredients-heading">{{ 'detail.extraIngredients' | t }}</h3>
               @if (ingredientColumns().right.length) {
               <ul>
                 @for (ingredient of ingredientColumns().right; track $index) {
@@ -137,20 +136,19 @@
                 }
               </ul>
               } @else {
-              <p class="empty-note">No extra ingredients needed.</p>
+              <p class="empty-note">{{ 'detail.noExtras' | t }}</p>
               }
             </section>
           </div>
           <button class="ingredients-intro-btn" type="button" [class.active]="ingredientsExpanded()"
             [attr.aria-expanded]="ingredientsExpanded()" aria-controls="ingredient-lists"
-            (click)="showIngredients(ingredientLists)"><span>{{ ingredientsExpanded() ? 'Hide' : 'Show' }}
-              Ingredients<img src="assets/icons/arrow_drop_down.png" alt=""></span></button>
+            (click)="showIngredients(ingredientLists)"><span>{{ (ingredientsExpanded() ? 'detail.hideIngredients' : 'detail.showIngredients') | t }}<img src="assets/icons/arrow_drop_down.png" alt=""></span></button>
         </section>
 
         <section class="panel directions-panel" aria-labelledby="directions-heading">
           <h2 id="directions-heading" class="section-heading">
-            <img src="assets/img/Directions-section.svg" alt="Directions" class="section-banner">
-            <img [src]="sectionBannerMobDirections" alt="Directions" class="section-banner-mob">
+            <img src="assets/img/Directions-section.svg" [alt]="'detail.directions' | t" class="section-banner">
+            <img [src]="sectionBannerMobDirections" [alt]="'detail.directions' | t" class="section-banner-mob">
           </h2>
 
           <div #directionsList id="directions-list" class="steps-columns" [class.has-cook-lists]="hasStepDetails()"
@@ -160,9 +158,8 @@
             <section class="cook-list" [attr.aria-labelledby]="'cook-list-heading-' + list.cook">
               <h3 class="cook-list-heading" [id]="'cook-list-heading-' + list.cook">
                 <img class="cook-list-icon" [src]="list.iconSrc" alt="">
-                <span>Cook {{ list.cook }}</span>
-                <span class="cook-list-count">{{ list.steps.length }} {{ list.steps.length === 1 ? 'task' : 'tasks'
-                  }}</span>
+                <span>{{ 'common.cook' | t: { number: list.cook } }}</span>
+                <span class="cook-list-count">{{ list.steps.length }} {{ (list.steps.length === 1 ? 'detail.task' : 'detail.tasks') | t }}</span>
               </h3>
               @if (list.steps.length) {
               <ol class="cook-steps">
@@ -175,12 +172,11 @@
                   @if (step.parallel || step.durationMinutes > 0) {
                   <p class="cook-step-meta">
                     @if (step.parallel) {
-                    <span class="step-badge step-badge-parallel">Parallel<span class="sr-only">: runs in parallel with
-                        another cook</span></span>
+                    <span class="step-badge step-badge-parallel">{{ 'detail.parallel' | t }}<span class="sr-only">{{ 'detail.parallelSr' | t }}</span></span>
                     }
                     @if (step.durationMinutes > 0) {
                     <span class="step-badge step-badge-duration"><img src="assets/icons/clock_Icon.png" alt="">
-                      {{ step.durationMinutes }} min<span class="sr-only"> duration</span></span>
+                      {{ step.durationMinutes }} min<span class="sr-only">{{ 'detail.durationSr' | t }}</span></span>
                     }
                   </p>
                   }
@@ -189,18 +185,18 @@
                 }
               </ol>
               } @else {
-              <p class="empty-note">No tasks for this cook.</p>
+              <p class="empty-note">{{ 'detail.noTasks' | t }}</p>
               }
             </section>
             }
             } @else {
             @for (column of stepColumns().columns; track $index; let columnIndex = $index) {
-            <ol class="step-column" [attr.aria-label]="'Steps for cook ' + (columnIndex + 1)">
+            <ol class="step-column" [attr.aria-label]="'detail.stepsFor' | t: { number: columnIndex + 1 }">
               @for (step of column; track $index; let stepIndex = $index) {
               <li [attr.value]="getStepNumber(columnIndex, stepIndex)">
                 <h3 class="step-headline"><span class="step-number">{{ getStepNumber(columnIndex, stepIndex) }}.</span><span
                     class="step-title">{{ step.title }}</span>
-                  <img class="step-chef-badge" [src]="getCookIcon(columnIndex + 1)" [alt]="'Cook ' + (columnIndex + 1)">
+                  <img class="step-chef-badge" [src]="getCookIcon(columnIndex + 1)" [alt]="'common.cook' | t: { number: columnIndex + 1 }">
                 </h3>
                 <p class="step-description">{{ step.description }}</p>
               </li>
@@ -211,49 +207,48 @@
           </div>
           <button class="directions-intro-btn" type="button" [class.active]="directionsExpanded()"
             [attr.aria-expanded]="directionsExpanded()" aria-controls="directions-list"
-            (click)="showDirections(directionsList)"><span>{{ directionsExpanded() ? 'Hide' : 'Show' }}
-              Directions<img src="assets/icons/arrow_drop_down.png" alt=""></span></button>
+            (click)="showDirections(directionsList)"><span>{{ (directionsExpanded() ? 'detail.hideDirections' : 'detail.showDirections') | t }}<img src="assets/icons/arrow_drop_down.png" alt=""></span></button>
         </section>
 
-        <section class="feedback-row" aria-label="Recipe feedback">
-          <p><strong>Just finished this meal?</strong> Give it a heart, so that the others know this is delicious.</p>
+        <section class="feedback-row" [attr.aria-label]="'detail.feedback' | t">
+          <p><strong>{{ 'detail.finished' | t }}</strong> {{ 'detail.giveHeart' | t }}</p>
           <button class="like-button" type="button" (click)="likeRecipe()"
             [disabled]="!selectedRecipeId() || isLikedByUser() || likeState() === 'saving'"
-            [attr.aria-label]="isLikedByUser() ? 'Recipe already liked' : 'Like this recipe'">
+            [attr.aria-label]="(isLikedByUser() ? 'detail.alreadyLiked' : 'detail.like') | t">
             <img [src]="isLikedByUser() ? 'assets/icons/heart-clicked.png' : 'assets/icons/heart.png'" alt="">
           </button>
         </section>
 
         <div role="status" aria-live="polite">
           @if (likeState() === 'saving') {
-          <p class="like-status">Saving your like...</p>
+          <p class="like-status">{{ 'detail.likeSaving' | t }}</p>
           } @else if (likeState() === 'saved') {
-          <p class="like-status like-status-success">Thanks, your like was saved</p>
+          <p class="like-status like-status-success">{{ 'detail.likeSaved' | t }}</p>
           } @else if (likeState() === 'error') {
-          <p class="like-status like-status-error">Could not save the like right now. Please try again.</p>
+          <p class="like-status like-status-error">{{ 'detail.likeError' | t }}</p>
           }
         </div>
 
-        <aside class="cta-banner" aria-label="Cookbook">
-          <p>Find inspiration for your next culinary adventure!</p>
-          <a [routerLink]="'/cookbook'">Cookbook</a>
+        <aside class="cta-banner" [attr.aria-label]="'common.cookbook' | t">
+          <p>{{ 'detail.inspiration' | t }}</p>
+          <a [routerLink]="'/cookbook'">{{ 'common.cookbook' | t }}</a>
         </aside>
       </article>
-      <nav class="bottom-actions" aria-label="Next steps">
-        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'Generate a recipe'"
+      <nav class="bottom-actions" [attr.aria-label]="'results.nextSteps' | t">
+        <app-routerlink-componente [targetClass]="'--dark-bottom'" [linkText]="'common.generateRecipe' | t"
           [targetPath]="'/generate-recipe'"
           [imageArrow]="'assets/icons/Arrow-right-dark.png'"></app-routerlink-componente>
       </nav>
       } @else if (isLoadingRecipe()) {
       <article class="panel empty-state" aria-busy="true">
-        <h1>Loading recipe ...</h1>
-        <p role="status">The recipe is being loaded from the cookbook.</p>
+        <h1>{{ 'detail.loadingTitle' | t }}</h1>
+        <p role="status">{{ 'detail.loadingText' | t }}</p>
       </article>
       } @else {
       <article class="panel empty-state">
-        <h1>Recipe not found</h1>
-        <p>This recipe could not be found. Pick another one from the list.</p>
-        <a [routerLink]="backLink()" class="back-button">{{ backLinkLabel() }}</a>
+        <h1>{{ 'detail.notFoundTitle' | t }}</h1>
+        <p>{{ 'detail.notFoundText' | t }}</p>
+        <a [routerLink]="backLink()" class="back-button">{{ backLinkLabel() | t }}</a>
       </article>
       }
     </div>

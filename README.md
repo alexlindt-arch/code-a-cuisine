@@ -21,6 +21,7 @@
 - **Cookbook.** Every generated recipe is saved, five sample recipes are preinstalled. Browse by cuisine or all recipes (20 per page), see the most liked recipes and give your favourites a heart.
 - **Fair use limit.** 3 generations per IP and 12 in total per calendar day plus a 15 second throttle, enforced in the workflow; Firebase only accepts "+1" on the counters.
 - **Responsive.** Separate layouts for laptops and phones/tablets, in portrait and landscape.
+- **German and English.** A green DE / EN switch in the header changes every text of the interface at once; the choice is remembered, the browser language decides on the first visit. AI generated recipe texts stay in the language they were created in.
 
 ## Screenshots
 
@@ -111,7 +112,8 @@ src/app/
 ├── cookbook/           cookbook overview, most liked, preinstalled sample recipes
 ├── cookbook-category/  recipes per cuisine and all recipes, 20 per page
 ├── impress/            imprint
-├── components/         header, button, link and image components
+├── components/         header, language switch, button, link and image components
+├── i18n/               German and English texts, translation service and pipe
 ├── recipe-library.service.ts   Firebase access for recipes and likes
 └── loading-state.service.ts    loading state shared with the header
 n8n/                    workflow exports and setup guide

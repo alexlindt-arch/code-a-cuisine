@@ -4,18 +4,18 @@
     <div class="home-content">
       <div class="content-left">
         <header class="top-content">
-          <p>AI-Powered <span class="keep-together">recipe generator</span></p>
+          <p>{{ 'hero.tagline' | t }} <span class="keep-together">{{ 'hero.taglineRest' | t }}</span></p>
           <h1 id="hero-title">Code à Cuisine</h1>
           <div class="button-content">
             <app-button [link]="recipeRouterLink"></app-button>
           </div>
         </header>
-        <aside class="bottom-section" aria-label="Cookbook">
-          <p>Hungry for inspiration?</p>
-          <app-routerlink-componente [targetClass]="'--light --hero'" [linkText]="'Go to cookbook'"
+        <aside class="bottom-section" [attr.aria-label]="'hero.cookbookAside' | t">
+          <p>{{ 'hero.hungry' | t }}</p>
+          <app-routerlink-componente [targetClass]="'--light --hero'" [linkText]="'hero.goToCookbook' | t"
             [targetPath]="cookbookRouterLink"></app-routerlink-componente>
         </aside>
-        <a [routerLink]="impressRouterLink" class="impressum-link">Imprint</a>
+        <a [routerLink]="impressRouterLink" class="impressum-link">{{ 'hero.imprint' | t }}</a>
       </div>
       <div class="content-right" aria-hidden="true">
         <app-images-component [class]="heroImageClass" [src]="heroImageThree" label=""></app-images-component>

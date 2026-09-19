@@ -3,6 +3,7 @@
  * @description Landing page with the call to action, the cookbook link and decorative dish images.
  */
 import { Component } from '@angular/core';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { Button } from '../components/button/button';
 import { ImagesComponent } from '../components/images-component/images-component';
 import { RouterlinkComponente } from '../components/routerlink-componente/routerlink-componente';
@@ -10,7 +11,7 @@ import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-hero',
-  imports: [Button, ImagesComponent, RouterLink, RouterlinkComponente],
+  imports: [Button, ImagesComponent, RouterLink, RouterlinkComponente, TranslatePipe],
   standalone: true,
   templateUrl: './hero.html',
   styleUrls: ['./hero.scss'],

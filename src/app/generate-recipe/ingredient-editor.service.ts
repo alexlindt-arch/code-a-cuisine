@@ -6,6 +6,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { I18nService } from '../i18n/i18n.service';
 import {
   INGREDIENT_UNIT_OPTIONS,
   getUnitLabel,
@@ -32,20 +33,17 @@ export interface EditableIngredient {
 @Injectable({ providedIn: 'root' })
 export class IngredientEditorService {
   protected readonly http = inject(HttpClient);
+  protected readonly i18n = inject(I18nService);
   protected readonly databaseUrl = environment.firebaseDatabaseUrl;
   protected readonly storageKey = 'cac-ingredients';
   protected readonly recipePayloadKey = 'cac-recipe-request';
   protected readonly recipesResponseKey = 'cac-recipe-results';
   protected readonly ingredientNamePattern = /^[A-Za-zÄÖÜäöüß0-9\s'()-]+$/;
   protected readonly maxIngredientNameLength = 40;
-  protected readonly ingredientHintMessage = 'no special characters, max 40 characters';
   protected readonly defaultQuantity = 1;
   protected readonly defaultUnit: IngredientUnitId = 'gram';
   protected readonly suggestionMinLength = 3;
-  readonly emptyIngredientHintMessage = 'Please enter an ingredient.';
-  readonly quantityHintMessage = 'Please enter a quantity greater than 0.';
   readonly minIngredientsRequired = 1;
-  readonly minIngredientsMessage = 'Please add at least 1 ingredient.';
   readonly firebaseIngredientNames = signal<string[]>([]);
   readonly ingredientValidationMessage = signal('');
   readonly quantityValidationMessage = signal('');
@@ -58,6 +56,38 @@ export class IngredientEditorService {
   readonly isEditUnitMenuOpen = signal(false);
   readonly editingIngredient = signal<EditableIngredient>({ quantity: this.defaultQuantity, unit: this.defaultUnit });
   readonly ingredients = signal<RecipeIngredient[]>([]);
+
+  /**
+   * Hint for an ingredient name with characters that are not allowed.
+   * @returns The hint in the current language.
+   */
+  protected get ingredientHintMessage(): string {
+    return this.i18n.t('generate.hintName');
+  }
+
+  /**
+   * Hint for an empty ingredient name; the template compares against it for its styling.
+   * @returns The hint in the current language.
+   */
+  get emptyIngredientHintMessage(): string {
+    return this.i18n.t('generate.hintEmpty');
+  }
+
+  /**
+   * Hint for a missing or non-positive quantity.
+   * @returns The hint in the current language.
+   */
+  get quantityHintMessage(): string {
+    return this.i18n.t('generate.hintQuantity');
+  }
+
+  /**
+   * Message shown when the next step is requested without ingredients.
+   * @returns The message in the current language.
+   */
+  get minIngredientsMessage(): string {
+    return this.i18n.t('generate.hintMin');
+  }
   readonly unitOptions = INGREDIENT_UNIT_OPTIONS;
   /** Whether at least one ingredient is listed. */
   readonly hasIngredients = computed(() => this.ingredients().length > 0);
@@ -192,7 +222,7 @@ export class IngredientEditorService {
    * @returns The label, for example 'g' or 'pcs'.
    */
   formatUnit(unit: string): string {
-    return getUnitLabel(unit);
+    return this.i18n.label('unit', unit) || getUnitLabel(unit);
   }
 
   /**
@@ -444,7 +474,7 @@ export class IngredientEditorService {
     const existing = this.ingredients()[index];
     if (existing.unit !== unit) {
       this.ingredientValidationMessage.set(
-        `${existing.name} is already on your list (${this.formatUnit(existing.unit)}). Edit it there.`
+        this.i18n.t('generate.hintDuplicate', { name: existing.name, unit: this.formatUnit(existing.unit) })
       );
       return false;
     }

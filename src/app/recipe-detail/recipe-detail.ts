@@ -7,6 +7,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
 import { RouterlinkComponente } from '../components/routerlink-componente/routerlink-componente';
+import { I18nService } from '../i18n/i18n.service';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { RecipeLibraryService, type CookbookRecipeRecord } from '../recipe-library.service';
 import {
   buildCookTodoLists,
@@ -63,7 +65,7 @@ const macroColors: Record<MacroKey, string> = {
 
 @Component({
   selector: 'app-recipe-detail',
-  imports: [RouterLink, RouterlinkComponente],
+  imports: [RouterLink, RouterlinkComponente, TranslatePipe],
   templateUrl: './recipe-detail.html',
   styleUrls: ['./recipe-detail.scss'],
 })
@@ -77,6 +79,7 @@ export class RecipeDetail {
   private readonly likedRecipeIdsKey = 'cac-liked-recipe-ids';
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly recipeLibraryService = inject(RecipeLibraryService);
+  readonly i18n = inject(I18nService);
 
   readonly recipes = signal<Recipe[]>([]);
   readonly requestPayload = signal<RecipeRequestPayload | null>(null);
@@ -101,7 +104,7 @@ export class RecipeDetail {
   readonly donutPathLength = 100;
 
   /** Label of the back link, depending on where the user came from. */
-  readonly backLinkLabel = computed(() => this.backLink().startsWith('/results') ? 'Recipe results' : 'Cookbook');
+  readonly backLinkLabel = computed(() => this.backLink().startsWith('/results') ? 'detail.backResults' : 'common.cookbook');
 
   /** Route path of the current page. */
   readonly path = computed(() => this.activatedRoute.snapshot.routeConfig?.path ?? '');
@@ -259,18 +262,18 @@ export class RecipeDetail {
       return '';
     }
 
-    const shares = facts.rows.map((row) => `${row.label} ${row.percent}%`).join(', ');
-    return `Energy split of ${facts.calories} kcal ${this.nutritionViewLabel()}: ${shares}`;
+    const shares = facts.rows.map((row) => `${this.i18n.t(row.label)} ${row.percent}%`).join(', ');
+    return this.i18n.t('detail.chartLabel', { calories: facts.calories, scope: this.nutritionViewLabel(), shares });
   });
 
   /** Lower-case description of the current nutrition view, used in sentences. */
   readonly nutritionViewLabel = computed(() => {
     if (this.nutritionView() === 'perPortion') {
-      return 'per portion';
+      return this.i18n.t('detail.scopePortion');
     }
 
     const portions = this.portions();
-    return portions ? `for the whole recipe (${portions} portions)` : 'for the whole recipe';
+    return portions ? this.i18n.t('detail.scopeWholeCount', { portions }) : this.i18n.t('detail.scopeWhole');
   });
 
   /**

@@ -19,46 +19,46 @@ export const routes: Routes = [
   { path: '',
     component: Hero,
     data: { headerStyle: 'dark' },
-    title: 'Code-a-Cuisine'
+    title: 'title.home'
   },
   { path: 'generate-recipe',
     component: GenerateRecipe,
     data: { headerStyle: 'light' },
-    title: 'Generate a Recipe'
+    title: 'title.generate'
   },
   { path: 'preferences',
     component: Preferences,
     data: { headerStyle: 'light' },
-    title: 'Preferences'
+    title: 'title.preferences'
   },
   { path: 'results',
     component: Results,
     data: { headerStyle: 'dark' },
-    title: 'Recipe Results'
+    title: 'title.results'
   },
   { path: 'results/:index',
     component: RecipeDetail,
     data: { headerStyle: 'light' },
-    title: 'Recipe Detail'
+    title: 'title.detail'
   },
   { path: 'cookbook',
     component: Cookbook,
     data: { headerStyle: 'light' },
-    title: 'Cookbook'
+    title: 'title.cookbook'
   },
   { path: 'cookbook/recipe/:recipeId',
     component: RecipeDetail,
     data: { headerStyle: 'light' },
-    title: 'Cookbook Recipe Detail'
+    title: 'title.cookbookDetail'
   },
   { path: 'cookbook/:category',
     component: CookbookCategoryPage,
     data: { headerStyle: 'light' },
-    title: 'Cookbook Category'
+    title: 'title.category'
   },
   { path: 'impress',
     component: Impress,
     data: { headerStyle: 'light' },
-    title: 'Imprint'
+    title: 'title.imprint'
   }
 ];

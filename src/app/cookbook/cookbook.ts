@@ -3,6 +3,7 @@
  * @description Cookbook overview page: most liked recipes, link to all recipes and the cuisine categories.
  */
 import { Component, computed, inject, signal } from '@angular/core';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { RouterLink } from '@angular/router';
 import { RouterlinkComponente } from '../components/routerlink-componente/routerlink-componente';
 import { ALL_RECIPES_SLUG, cookbookCategories } from './cookbook-data';
@@ -10,7 +11,7 @@ import { RecipeLibraryService, type CookbookRecipeRecord } from '../recipe-libra
 
 @Component({
   selector: 'app-cookbook',
-  imports: [RouterLink, RouterlinkComponente],
+  imports: [RouterLink, RouterlinkComponente, TranslatePipe],
   templateUrl: './cookbook.html',
   styleUrls: ['./cookbook.scss'],
 })
