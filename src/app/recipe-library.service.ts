@@ -107,6 +107,13 @@ export interface CookbookRecipeRecord {
 
 type FirebaseRecipesResponse = Record<string, Partial<FirebaseRecipeRecord>>;
 
+/**
+ * Classic dishes of every cuisine (15 per category together with the inline seeds). They are a
+ * static asset loaded on demand, so the app bundle stays small; like the seeds they never reach
+ * Firebase and use the `seed-` id prefix.
+ */
+export const CLASSIC_RECIPES_URL = 'assets/data/classic-recipes.json';
+
 @Injectable({ providedIn: 'root' })
 /**
  * Saves generated recipes to Firebase and loads, validates and likes cookbook recipes.
@@ -119,6 +126,9 @@ export class RecipeLibraryService {
    * Preinstalled recipes never reach Firebase, so their likes cannot be stored there either.
    */
   private readonly seedLikes = new Map<string, number>();
+  /** Classic recipes once loaded; empty until the first cookbook request. */
+  private classicRecipes: CookbookRecipeRecord[] = [];
+  private classicRecipesRequest: Promise<CookbookRecipeRecord[]> | null = null;
 
   /**
    * Saves each generated recipe as a new record in Firebase.
@@ -167,9 +177,9 @@ export class RecipeLibraryService {
    * @returns The validated cookbook recipes plus the preinstalled ones.
    */
   async getAllRecipes(): Promise<CookbookRecipeRecord[]> {
-    const storedRecipes = await this.loadStoredRecipes();
+    const [storedRecipes, classicRecipes] = await Promise.all([this.loadStoredRecipes(), this.loadClassicRecipes()]);
 
-    return mergeWithSeedRecipes(storedRecipes)
+    return mergeWithSeedRecipes([...storedRecipes, ...classicRecipes])
       .map((recipe) => this.withSeedLikes(recipe))
       .sort((firstRecipe, secondRecipe) => {
         const firstDate = Date.parse(firstRecipe.createdAt);
@@ -203,6 +213,28 @@ export class RecipeLibraryService {
   }
 
   /**
+   * Loads the classic recipes asset once and keeps it for the rest of the visit.
+   * A failing request is logged and treated like an empty list, and the next call tries again.
+   * @returns The classic recipes that pass validation.
+   */
+  private loadClassicRecipes(): Promise<CookbookRecipeRecord[]> {
+    this.classicRecipesRequest ??= firstValueFrom(this.http.get<Array<Partial<FirebaseRecipeRecord> & { id?: string }>>(CLASSIC_RECIPES_URL))
+      .then((records) => (Array.isArray(records) ? records : [])
+        .map((record) => this.toCookbookRecipeRecord(record.id ?? '', record))
+        .filter((recipe): recipe is CookbookRecipeRecord => recipe !== null))
+      .catch((error: unknown) => {
+        console.error('Failed to load the classic recipes:', error);
+        this.classicRecipesRequest = null;
+        return [];
+      })
+      .then((recipes) => {
+        this.classicRecipes = recipes;
+        return recipes;
+      });
+    return this.classicRecipesRequest;
+  }
+
+  /**
    * Loads a single recipe. Preinstalled recipes are resolved from the local seed list,
    * every other id is read from Firebase.
    * @param recipeId Firebase id, or id of a preinstalled recipe.
@@ -212,6 +244,10 @@ export class RecipeLibraryService {
     const seedRecipe = findSeedRecipe(recipeId);
     if (seedRecipe) {
       return this.withSeedLikes(seedRecipe);
+    }
+    if (isSeedRecipeId(recipeId)) {
+      const classicRecipe = (await this.loadClassicRecipes()).find((recipe) => recipe.id === recipeId);
+      return classicRecipe ? this.withSeedLikes(classicRecipe) : null;
     }
 
     const response = await firstValueFrom(this.http.get<Partial<FirebaseRecipeRecord> | null>(`${this.databaseUrl}/recipes/${recipeId}.json`));
@@ -228,7 +264,8 @@ export class RecipeLibraryService {
    * @returns The new like count for this browser session.
    */
   private incrementSeedRecipeLike(recipeId: string): number {
-    const currentLikes = this.seedLikes.get(recipeId) ?? findSeedRecipe(recipeId)?.likes ?? 0;
+    const preinstalled = findSeedRecipe(recipeId) ?? this.classicRecipes.find((recipe) => recipe.id === recipeId);
+    const currentLikes = this.seedLikes.get(recipeId) ?? preinstalled?.likes ?? 0;
     const nextLikes = currentLikes + 1;
     this.seedLikes.set(recipeId, nextLikes);
     return nextLikes;

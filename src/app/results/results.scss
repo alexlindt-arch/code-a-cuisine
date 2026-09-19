@@ -332,3 +332,240 @@ h1 {
     min-height: unset;
   }
 }
+
+// ===========================================================================
+// Design pass (results page from the Figma file): cream headline, copy and tags next to a
+// white framed visual, 88px gap, three light green cards with a 32px title, the cooking time
+// and a cream "View" button. On phones the cards sit in a darker green panel.
+// ===========================================================================
+$cream: #FAF0E6;
+$green-dark: #10310B;
+$green-middle: #1E5515;
+$green-olive: #396039;
+
+.results-shell {
+  font-family: 'Quicksand', sans-serif;
+
+  :is(h1, h2, p, li, a, span) {
+    font-family: 'Quicksand', sans-serif;
+  }
+}
+
+.results-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 610px) minmax(0, 574px);
+  justify-content: space-between;
+  align-items: start;
+  gap: 48px;
+  margin: 24px 0 88px;
+  padding: 0 0 0 40px;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(40px, 3.8vw, 54px);
+    font-weight: 600;
+    line-height: 1.2;
+    color: $cream;
+  }
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.results-copy {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  color: $cream;
+}
+
+.result-tags {
+  gap: 16px;
+}
+
+.tag {
+  padding: 6px 12px;
+  border-radius: 30px;
+  background: $cream;
+  color: $green-middle;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+// White frame with the illustration cropped into it, as in the design.
+.hero-image-wrap {
+  height: 222px;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.hero-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+.result-grid {
+  grid-template-columns: repeat(3, minmax(0, 411px));
+  justify-content: center;
+  gap: 24px;
+}
+
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  height: 100%;
+  padding: 32px 24px;
+  border-radius: 20px;
+  background: #DBE0DB;
+
+  h2 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    color: $green-dark;
+  }
+}
+
+.recipe-index {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+  color: $green-middle;
+
+  img {
+    width: 40px;
+    height: auto;
+  }
+}
+
+.recipe-facts {
+  gap: 8px;
+  margin: 0 0 32px;
+}
+
+.recipe-time {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  color: $green-olive;
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.recipe-cuisine,
+.recipe-extras {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 22px;
+  color: $green-olive;
+}
+
+.view-btn {
+  margin-top: auto;
+  padding: 16px 26px;
+  background: $cream;
+  color: #008000;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.bottom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 48px;
+}
+
+@media (max-width: 980px) {
+  .results-hero {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+
+  .result-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  }
+}
+
+// Mobile design (375px frame): 32px headline, 131px visual, cards in a green panel.
+@media (max-width: 640px) {
+  .results-hero {
+    gap: 16px;
+    margin: 16px 0 48px;
+
+    h1 {
+      font-size: 32px;
+      line-height: 40px;
+    }
+  }
+
+  .hero-content {
+    gap: 16px;
+  }
+
+  .hero-image-wrap {
+    height: 131px;
+  }
+
+  .results-copy {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .result-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0;
+    border-radius: 20px;
+    background: rgba($green-olive, 0.2);
+  }
+
+  .recipe-card {
+    padding: 32px 24px;
+    background: #D7DFD7;
+
+    h2 {
+      font-size: 24px;
+      line-height: 30px;
+    }
+  }
+
+  .recipe-time {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .view-btn {
+    min-height: 52px;
+    padding: 4px 16px;
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .bottom-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

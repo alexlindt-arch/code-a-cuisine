@@ -646,3 +646,10 @@ ul {
     gap: 5px;
   }
 }
+// Back link to the start page, same arrow and position as on the other pages.
+.top-section {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}

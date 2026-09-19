@@ -16,8 +16,9 @@
   } @else {
   <div class="content-limited">
     <nav class="top-section" [attr.aria-label]="'prefs.previousStep' | t">
-      <a [routerLink]="'/generate-recipe'" class="router-link"><app-images-component
-          [class]="arrowClass" [src]="heroImageArrow" label=""></app-images-component>{{ 'prefs.ingredients' | t }}</a>
+      <a [routerLink]="'/generate-recipe'" class="router-link"><svg class="back-arrow" viewBox="0 0 24 14"
+          aria-hidden="true" focusable="false"><path d="M23 7H2M8 1.5 2 7l6 5.5" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>{{ 'prefs.ingredients' | t }}</a>
     </nav>
 
     <form class="preferences-content" (submit)="onSubmit($event)" aria-labelledby="preferences-title">

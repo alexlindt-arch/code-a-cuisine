@@ -395,6 +395,18 @@ legend {
     filter: opacity(70%);
     transition: all 0.2s ease-in-out;
   }
+
+  // Sharp SVG back arrow in the link colour (replaces the blurry PNG).
+  .back-arrow {
+    flex-shrink: 0;
+    width: 24px;
+    height: 14px;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  &:hover .back-arrow {
+    transform: translateX(-6px);
+  }
 }
 
 .preferences-content {

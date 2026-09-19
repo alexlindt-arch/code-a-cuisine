@@ -7,7 +7,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { RecipeLibraryService } from './recipe-library.service';
+import { CLASSIC_RECIPES_URL, RecipeLibraryService } from './recipe-library.service';
 import { seedRecipes } from './cookbook/seed-recipes';
 import { environment } from '../environments/environment';
 
@@ -32,6 +32,7 @@ describe('RecipeLibraryService', () => {
 
   it('lists every preinstalled recipe when the database is empty', async () => {
     const recipesPromise = service.getAllRecipes();
+    httpMock.expectOne(CLASSIC_RECIPES_URL).flush([]);
     httpMock.expectOne(recipesUrl).flush(null);
 
     const recipes = await recipesPromise;
@@ -41,6 +42,7 @@ describe('RecipeLibraryService', () => {
 
   it('still lists the preinstalled recipes when Firebase is unreachable', async () => {
     const recipesPromise = service.getAllRecipes();
+    httpMock.expectOne(CLASSIC_RECIPES_URL).flush([]);
     httpMock.expectOne(recipesUrl).error(new ProgressEvent('error'), { status: 0, statusText: 'offline' });
 
     const recipes = await recipesPromise;
@@ -50,6 +52,7 @@ describe('RecipeLibraryService', () => {
 
   it('merges the preinstalled recipes with the stored ones without duplicating them', async () => {
     const recipesPromise = service.getAllRecipes();
+    httpMock.expectOne(CLASSIC_RECIPES_URL).flush([]);
     httpMock.expectOne(recipesUrl).flush({
       'firebase-1': {
         title: 'Generated recipe',
@@ -91,6 +94,18 @@ describe('RecipeLibraryService', () => {
       expect(categorySlugs).toContain(recipe.categorySlug);
       expect(recipe.id.startsWith('seed-')).toBe(true);
     }
+  });
+
+  it('adds the classic recipes from the asset and resolves them by id without Firebase', async () => {
+    const classic = { ...seedRecipes[0], id: 'seed-italian-test-classic', title: 'Classic test dish' };
+    const recipesPromise = service.getAllRecipes();
+    httpMock.expectOne(CLASSIC_RECIPES_URL).flush([classic]);
+    httpMock.expectOne(recipesUrl).flush(null);
+
+    const recipes = await recipesPromise;
+
+    expect(recipes.map((recipe) => recipe.id)).toContain('seed-italian-test-classic');
+    expect((await service.getRecipeById('seed-italian-test-classic'))?.title).toBe('Classic test dish');
   });
 
   it('counts likes of a preinstalled recipe without writing them to Firebase', async () => {

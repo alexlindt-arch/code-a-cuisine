@@ -1,3 +1,9 @@
 <a [routerLink]="targetPath()" class="router-link {{ targetClass() }}" [attr.aria-label]="ariaLabel()">{{ linkText() }}
-  <app-images-component [class]="arrowClass" [src]="imageArrow()" label=""></app-images-component>
+  <svg class="link-arrow" viewBox="0 0 24 14" aria-hidden="true" focusable="false">
+    @if (isBackArrow()) {
+    <path d="M23 7H2M8 1.5 2 7l6 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    } @else {
+    <path d="M1 7h21M16 1.5 22 7l-6 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    }
+  </svg>
 </a>

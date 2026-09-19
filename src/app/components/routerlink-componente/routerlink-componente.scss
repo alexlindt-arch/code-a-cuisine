@@ -15,8 +15,12 @@ a.router-link {
   }
 }
 
-a.router-link app-images-component {
-  display: inline-flex;
+a.router-link .link-arrow {
+  display: inline-block;
+  flex-shrink: 0;
+  height: auto;
+  overflow: visible;
+
   width: 20px;
   min-width: 20px;
   margin-left: 5px;
@@ -47,7 +51,7 @@ a.router-link:hover {
   cursor: pointer;
 }
 
-a.router-link.--light:hover app-images-component {
+a.router-link.--light:hover .link-arrow {
   transform: translateX(4px);
 }
 //--------------------------------------------------------
@@ -65,8 +69,9 @@ a.router-link.--dark {
   }
 }
 
-a.router-link.--dark:hover app-images-component {
-  transform: translateX(-8px);
+a.router-link.--dark:hover .link-arrow {
+  // The back arrow is drawn pointing left; hovering only moves it, it never turns.
+  transform: translateX(-6px);
 
 }
 //--------------------------------------------------------
@@ -83,7 +88,7 @@ a.router-link.--dark-bottom {
   }
 }
 
-a.router-link.--dark-bottom:hover app-images-component {
+a.router-link.--dark-bottom:hover .link-arrow {
   transform: translateX(8px);
 }
 
@@ -104,7 +109,7 @@ a.router-link.--dark-bottom:hover app-images-component {
       background-color: rgba(250, 240, 230, 0.12);
     }
 
-    app-images-component {
+    .link-arrow {
       width: 24px;
       min-width: 24px;
       margin-left: 0;
@@ -131,7 +136,7 @@ a.router-link.--dark-bottom:hover app-images-component {
     line-height: 22px;
     white-space: nowrap;
 
-    app-images-component {
+    .link-arrow {
       width: 20px;
       min-width: 20px;
       margin-left: 0;

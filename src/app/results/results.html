@@ -64,6 +64,8 @@
         }
       </ol>
       <nav class="bottom-actions" [attr.aria-label]="'results.nextSteps' | t">
+        <app-routerlink-componente [targetClass]="'--light'" [linkText]="'hero.goToCookbook' | t"
+          [targetPath]="'/cookbook'"></app-routerlink-componente>
         <app-routerlink-componente [targetClass]="'--light'" [linkText]="'results.new' | t"
           [targetPath]="'/generate-recipe'"></app-routerlink-componente>
       </nav>

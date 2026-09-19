@@ -1,14 +1,13 @@
 /**
  * @file routerlink-componente.ts
- * @description Text link with an arrow icon used for back and forward navigation.
+ * @description Text link with an arrow (inline SVG) used for back and forward navigation.
  */
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ImagesComponent } from '../images-component/images-component';
 
 @Component({
   selector: 'app-routerlink-componente',
-  imports: [RouterLink, ImagesComponent],
+  imports: [RouterLink],
   templateUrl: './routerlink-componente.html',
   styleUrls: ['./routerlink-componente.scss'],
 })
@@ -22,4 +21,12 @@ export class RouterlinkComponente {
   readonly imageArrow = input('assets/icons/Arrow-right.png');
   readonly ariaLabel = input<string | null>(null);
   readonly arrowClass = 'arrow-icon';
+
+  /**
+   * Whether the arrow points back (left). The former PNG arrows are replaced by sharp SVG arrows
+   * in the link colour, drawn in their direction (never mirrored, so they cannot turn when
+   * animated); the imageArrow input only decides the direction now.
+   * @returns True for the left pointing arrows.
+   */
+  readonly isBackArrow = computed(() => this.imageArrow().toLowerCase().includes('left'));
 }

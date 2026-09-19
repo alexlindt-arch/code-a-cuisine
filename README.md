@@ -18,7 +18,7 @@
 - **Ingredients in, recipes out.** Add at least one ingredient with quantity and unit, and the AI builds three matching recipes around them.
 - **Preferences.** Portions (1–12), number of cooks (1–3), cooking time (quick / medium / complex), cuisine (German, Italian, Indian, Japanese, Gourmet / Fine Dining, Fusion) and diets (vegetarian, vegan, keto, no restrictions).
 - **Step-by-step directions.** Each recipe splits your ingredients from the extras it needs, assigns steps to the cooks, marks parallel steps and shows nutrition per portion and for the whole recipe.
-- **Cookbook.** Every generated recipe is saved, five sample recipes are preinstalled. Browse by cuisine or all recipes (20 per page), see the most liked recipes and give your favourites a heart.
+- **Cookbook.** Every generated recipe is saved, about 15 classic dishes per cuisine are preinstalled (loaded on demand from `assets/data/classic-recipes.json`). Browse by cuisine or all recipes (20 per page), see the most liked recipes and give your favourites a heart.
 - **Fair use limit.** 3 generations per IP and 12 in total per calendar day plus a 15 second throttle, enforced in the workflow; Firebase only accepts "+1" on the counters.
 - **Responsive.** Separate layouts for laptops and phones/tablets, in portrait and landscape.
 - **German and English.** A green DE / EN switch in the header changes every text of the interface at once; the choice is remembered, the browser language decides on the first visit. AI generated recipe texts stay in the language they were created in.

@@ -244,6 +244,9 @@ $hero-card-pad-sm: 12px;
   text-decoration: none;
   display: flex;
   flex-direction: column;
+  // Cards of one grid row are equally tall, so packing each card to the bottom keeps all
+  // images on the same line, even when one heading wraps onto a second line.
+  justify-content: flex-end;
   gap: 10px;
   width: 100%;
   height: 100%;

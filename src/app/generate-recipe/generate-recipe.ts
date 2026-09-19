@@ -6,11 +6,12 @@ import { Component, inject } from '@angular/core';
 import { TranslatePipe } from '../i18n/translate.pipe';
 import { Router } from '@angular/router';
 import { ImagesComponent } from '../components/images-component/images-component';
+import { RouterlinkComponente } from '../components/routerlink-componente/routerlink-componente';
 import { IngredientEditorService } from './ingredient-editor.service';
 
 @Component({
   selector: 'app-generate-recipe',
-  imports: [ImagesComponent, TranslatePipe],
+  imports: [ImagesComponent, RouterlinkComponente, TranslatePipe],
   templateUrl: './generate-recipe.html',
   styleUrls: ['./generate-recipe.scss'],
 })

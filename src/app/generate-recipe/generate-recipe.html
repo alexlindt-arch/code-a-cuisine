@@ -1,5 +1,9 @@
 <section class="generate-recipe" aria-labelledby="generate-recipe-title">
   <div class="content-limited">
+    <nav class="top-section" [attr.aria-label]="'cookbook.backHome' | t">
+      <app-routerlink-componente [targetClass]="'--dark'" [linkText]="'common.back' | t" [targetPath]="''"
+        [imageArrow]="'left'"></app-routerlink-componente>
+    </nav>
     <header class="page-header">
       <h1 id="generate-recipe-title">{{ 'generate.title' | t }}</h1>
       <p>{{ 'generate.intro' | t }}</p>
