@@ -38,7 +38,7 @@
             <a class="recipe-entry-link" [routerLink]="['/cookbook/recipe', recipe.id]"
               [queryParams]="{ from: detailBackPath() }">
               <span class="recipe-index" aria-hidden="true">{{ pageStartIndex() + i + 1 }}.</span>
-              <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
+              <p class="recipe-meta"><img src="assets/icons/clock.svg" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
               <h2>{{ recipe.title }}</h2>
               <ul class="recipe-entry-tags" [attr.aria-label]="'common.recipeFacts' | t">
                 @if (category.slug === 'all') {

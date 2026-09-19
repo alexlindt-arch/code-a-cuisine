@@ -13,7 +13,7 @@
       <article class="recipe-card-shell" aria-labelledby="recipe-title">
         <div class="recipe-hero-card">
           <header class="hero-main">
-            <p class="meta-line"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
+            <p class="meta-line"><img src="assets/icons/clock.svg" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
             <h1 id="recipe-title">{{ recipe.title }}</h1>
             @if (requestPayload(); as request) {
             <p class="cook-count">{{ 'detail.cookingPersons' | t: { count: request.preferences.cooks } }}
@@ -175,7 +175,7 @@
                     <span class="step-badge step-badge-parallel">{{ 'detail.parallel' | t }}<span class="sr-only">{{ 'detail.parallelSr' | t }}</span></span>
                     }
                     @if (step.durationMinutes > 0) {
-                    <span class="step-badge step-badge-duration"><img src="assets/icons/clock_Icon.png" alt="">
+                    <span class="step-badge step-badge-duration"><img src="assets/icons/clock.svg" alt="">
                       {{ step.durationMinutes }} min<span class="sr-only">{{ 'detail.durationSr' | t }}</span></span>
                     }
                   </p>

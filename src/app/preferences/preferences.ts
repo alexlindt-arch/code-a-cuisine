@@ -174,9 +174,9 @@ export class Preferences implements OnDestroy {
 
   private readonly quotaDialog = viewChild<ElementRef<HTMLDialogElement>>('quotaDialog');
 
-  prefBlockIconClock = 'assets/icons/clock_Icon.png';
-  prefBlockIconCuisine = 'assets/icons/word_Icon.png';
-  prefBlockIconDiet = 'assets/icons/fork_spoon.png';
+  prefBlockIconClock = 'assets/icons/clock.svg';
+  prefBlockIconCuisine = 'assets/icons/globe.svg';
+  prefBlockIconDiet = 'assets/icons/fork-spoon.svg';
   heroImageArrow = 'assets/icons/Arrow-left-dark.png';
   heroImageArrowLight = 'assets/icons/Arrow-right.png';
   arrowClass = 'arrow-icon';

@@ -31,7 +31,7 @@
               <a class="favorite-card" [routerLink]="['/cookbook/recipe', recipe.id]"
                 [queryParams]="{ from: '/cookbook' }">
                 <div class="recipe-image-wrapper">
-                  <p class="recipe-meta"><img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
+                  <p class="recipe-meta"><img src="assets/icons/clock.svg" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}</p>
                   <p class="likes-pill"><img src="assets/icons/heart.png" [alt]="'common.likes' | t"> {{ recipe.likes }}</p>
                 </div>
                 <h3>{{ recipe.title }}</h3>

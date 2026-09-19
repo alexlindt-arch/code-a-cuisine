@@ -41,7 +41,7 @@
             <h2 [id]="'recipe-card-title-' + i">{{ recipe.title }}</h2>
             <ul class="recipe-facts">
               <li class="recipe-time">
-                <img src="assets/icons/clock_Icon.png" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}
+                <img src="assets/icons/clock.svg" alt=""> {{ 'common.cookingTime' | t: { minutes: recipe.estimatedMinutes } }}
               </li>
               @if (cuisineLabel(); as cuisine) {
               <li class="recipe-cuisine">{{ 'results.cuisine' | t: { cuisine: cuisine } }}</li>

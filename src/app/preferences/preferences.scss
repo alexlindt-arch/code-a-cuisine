@@ -956,8 +956,18 @@ $green-olive: #396039;
     color: $green-dark;
   }
 
+  // The icon is a block of exactly its own size, so the flex row centres it on the heading
+  // instead of on an inline line box with extra space below the image.
   app-images-component {
+    display: flex;
+    flex-shrink: 0;
     width: 24px;
+
+    ::ng-deep img {
+      display: block;
+      width: 24px;
+      height: 24px;
+    }
   }
 }
 
