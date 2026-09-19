@@ -344,10 +344,6 @@
   }
 }
 
-h1 {
-  font-size: clamp(23px, 3.4vw, 48px) !important;
-}
-
 fieldset {
   min-width: 0;
   margin: 0;
@@ -829,5 +825,283 @@ legend {
   .generate-loading * {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+// ===========================================================================
+// Design pass (step 2 "Preferences" from the Figma file): 721px column, 28px headline,
+// portions and cooks centred side by side, one flat green form box with cream chips.
+// ===========================================================================
+$cream: #FAF0E6;
+$green-dark: #10310B;
+$green-middle: #1E5515;
+$green-olive: #396039;
+
+.preferences-content {
+  gap: 56px;
+  max-width: 721px;
+  font-family: 'Quicksand', sans-serif;
+  color: $green-dark;
+
+  :is(h1, h2, p, span, button, output, a) {
+    font-family: 'Quicksand', sans-serif;
+  }
+}
+
+.preferences-header {
+  gap: 8px;
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 35px;
+    letter-spacing: 0;
+    color: $green-dark;
+  }
+}
+
+// Portions and cooks, then the form box, 32px apart.
+.preferences-intro {
+  justify-content: center;
+  gap: 32px 120px;
+  padding: 0;
+  margin-bottom: -24px;
+}
+
+.pref-selection-content {
+  width: auto;
+  gap: 16px;
+
+  legend {
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 20px;
+    color: $green-dark;
+  }
+}
+
+.pref-number-stepper {
+  gap: 8px;
+}
+
+.pref-stepper-btn {
+  width: 28px;
+  height: 28px;
+  border-width: 2px;
+  border-color: $green-dark;
+  color: $green-dark;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.pref-value {
+  min-width: 22px;
+  padding: 0 5px 1px;
+  background-color: rgba($green-olive, 0.2);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+  color: $green-dark;
+}
+
+.pref-value-label {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+  color: $green-dark;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 32px 24px;
+  border-radius: 20px;
+  background: rgba($green-olive, 0.2);
+}
+
+.pref-block {
+  gap: 24px;
+
+  &:not(:first-child) {
+    margin-top: 0;
+  }
+}
+
+.pref-block-header {
+  gap: 4px;
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 30px;
+    color: $green-dark;
+  }
+
+  app-images-component {
+    width: 24px;
+  }
+}
+
+.chip-grid {
+  gap: 20px;
+}
+
+.chip-grid-time {
+  gap: 20px;
+}
+
+// Cream chips without a frame; the hit area stays 44px high through the touch-target mixin.
+.chip {
+  @include mix.touch-target();
+  min-height: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 30px;
+  background-color: $cream;
+  color: $green-middle;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: none;
+      background-color: #F4E6D6;
+    }
+  }
+
+  &.selected {
+    background-color: $green-olive;
+    color: $cream;
+  }
+}
+
+.chip-time-wrapper {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.chip-time {
+  align-items: center;
+  min-width: 83px;
+  text-align: center;
+}
+
+.chip-title {
+  font-size: 20px;
+  line-height: 20px;
+}
+
+.chip-subtitle {
+  padding: 0;
+  font-size: 14px;
+  line-height: 14px;
+  color: $green-middle;
+}
+
+.footer-actions {
+  margin: 0 0 40px;
+
+  .btn.--generate-btn {
+    width: auto;
+    min-height: 62px;
+    padding: 16px 26px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 30px;
+    background-color: $green-olive;
+    color: $cream;
+  }
+}
+
+// Mobile design (375px frame): 340px column, left aligned headline, smaller labels.
+@media (max-width: 560px) {
+  .preferences-content {
+    gap: 40px;
+    max-width: 340px;
+  }
+
+  .preferences-header {
+    align-items: flex-start;
+    padding: 0;
+
+    h1 {
+      font-size: 24px;
+      line-height: 30px;
+    }
+  }
+
+  .preferences-intro {
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: -8px;
+  }
+
+  .pref-selection-content {
+    gap: 8px;
+
+    legend {
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 16px;
+      line-height: 20px;
+    }
+  }
+
+  .pref-value-label {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  // 16px side padding leaves room for the three time chips in one row, as in the design.
+  .card {
+    align-items: center;
+    padding: 32px 16px;
+  }
+
+  .pref-block {
+    width: 100%;
+  }
+
+  .pref-block-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .chip-grid {
+    gap: 16px;
+  }
+
+  .chip-grid-time {
+    gap: 8px;
+  }
+
+  .chip-time {
+    min-width: 0;
+    padding: 6px 10px;
+  }
+
+  // One row from 360px on; narrower phones may wrap the third chip.
+  @media (min-width: 360px) {
+    .chip-grid-time {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .footer-actions .btn.--generate-btn {
+    min-height: 52px;
+    padding: 4px 16px;
+    font-size: 16px;
+    line-height: 20px;
   }
 }
